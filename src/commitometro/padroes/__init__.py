@@ -21,3 +21,7 @@ class ExpressaoRegular:
 
 
 REGISTRO: dict[str, ExpressaoRegular] = {}
+
+from . import commits
+from . import versionamento
+from . import referencias
