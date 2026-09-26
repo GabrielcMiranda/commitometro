@@ -1,0 +1,25 @@
+{
+  "id": "ER-05",
+  "aceitas": [
+    {"cadeia": "Closes #1", "limite": true, "motivo": "menor número válido"},
+    {"cadeia": "fixes #42", "limite": false},
+    {"cadeia": "Resolves #7, #8, #9", "limite": false},
+    {"cadeia": "Refs: #123", "limite": false},
+    {"cadeia": "closed octocat/hello-world#15", "limite": false},
+    {"cadeia": "Fix #3, org/repo.js#4", "limite": false},
+    {"cadeia": "resolve #10", "limite": false},
+    {"cadeia": "fixed #2", "limite": false}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "Closes #0", "limite": true, "motivo": "número não pode ter zero à esquerda nem ser 0"},
+    {"cadeia": "closes #012", "limite": false},
+    {"cadeia": "Closes#12", "limite": false},
+    {"cadeia": "closes 12", "limite": false},
+    {"cadeia": "Fixing #3", "limite": false},
+    {"cadeia": "CLOSES #3", "limite": false},
+    {"cadeia": "Closes #3,#4", "limite": false},
+    {"cadeia": "Closes org/#3", "limite": false},
+    {"cadeia": "Refs #3, ", "limite": false}
+  ]
+}
