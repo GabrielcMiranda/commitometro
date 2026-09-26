@@ -1,0 +1,25 @@
+{
+  "id": "ER-03",
+  "aceitas": [
+    {"cadeia": "1.0.0", "limite": false},
+    {"cadeia": "v2.1.0", "limite": false},
+    {"cadeia": "0.0.0", "limite": true, "motivo": "menor versão possível"},
+    {"cadeia": "2.1.0-beta.3", "limite": false},
+    {"cadeia": "v10.20.30-rc", "limite": false},
+    {"cadeia": "1.0.0-alpha.0", "limite": false},
+    {"cadeia": "v0.1.0-rc.12", "limite": false},
+    {"cadeia": "999.0.1", "limite": false}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "1.0", "limite": false},
+    {"cadeia": "01.0.0", "limite": true, "motivo": "zero à esquerda"},
+    {"cadeia": "v1.0.0-", "limite": false},
+    {"cadeia": "1.0.0-gamma", "limite": false},
+    {"cadeia": "1.0.0-beta.01", "limite": false},
+    {"cadeia": "V1.0.0", "limite": false},
+    {"cadeia": "1.0.0.0", "limite": false},
+    {"cadeia": "1.0.0-beta3", "limite": false},
+    {"cadeia": "1.0.0-BETA", "limite": false}
+  ]
+}
