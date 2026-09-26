@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.coverage
+coverage.json
+htmlcov/
+.streamlit/secrets.toml
+dados/repo_demo/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
