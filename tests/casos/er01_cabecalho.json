@@ -1,0 +1,26 @@
+{
+  "id": "ER-01",
+  "aceitas": [
+    {"cadeia": "feat: adiciona recuperação de senha", "limite": false},
+    {"cadeia": "fix(auth): corrige expiração do token", "limite": false},
+    {"cadeia": "feat(api-v2)!: remove endpoint legado", "limite": false},
+    {"cadeia": "refactor!: reorganiza módulos internos", "limite": false},
+    {"cadeia": "ci(github-actions): adiciona cache do pip", "limite": false},
+    {"cadeia": "docs: x", "limite": true, "motivo": "descrição de 1 símbolo"},
+    {"cadeia": "revert: feat(login): desfaz alteração", "limite": false},
+    {"cadeia": "test(er01): cobre escopo com hífen", "limite": false}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "Feat: adiciona login", "limite": false},
+    {"cadeia": "feat:adiciona login", "limite": false},
+    {"cadeia": "feat(): escopo vazio", "limite": false},
+    {"cadeia": "feat(Login): escopo maiúsculo", "limite": false},
+    {"cadeia": "feature: tipo inexistente", "limite": false},
+    {"cadeia": "fix(auth) : espaço antes dos dois-pontos", "limite": false},
+    {"cadeia": "feat:  descrição iniciando com espaço", "limite": true, "motivo": "descrição não pode começar com espaço"},
+    {"cadeia": "fix(-auth): hífen inicial no escopo", "limite": false},
+    {"cadeia": "feat!(api): ordem invertida", "limite": false},
+    {"cadeia": "feat: ", "limite": true, "motivo": "descrição vazia"}
+  ]
+}
