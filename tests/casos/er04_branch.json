@@ -1,0 +1,25 @@
+{
+  "id": "ER-04",
+  "aceitas": [
+    {"cadeia": "main", "limite": false},
+    {"cadeia": "develop", "limite": false},
+    {"cadeia": "feature/login", "limite": false},
+    {"cadeia": "feature/42-recuperar-senha", "limite": false},
+    {"cadeia": "bugfix/corrige-null", "limite": false},
+    {"cadeia": "hotfix/a", "limite": true, "motivo": "sufixo de 1 símbolo"},
+    {"cadeia": "release/1.4.0", "limite": false},
+    {"cadeia": "docs/readme", "limite": false}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "master", "limite": false},
+    {"cadeia": "feature/", "limite": true, "motivo": "sufixo vazio"},
+    {"cadeia": "feature/Login", "limite": false},
+    {"cadeia": "feature/login--social", "limite": false},
+    {"cadeia": "feature/login-", "limite": false},
+    {"cadeia": "feat/login", "limite": false},
+    {"cadeia": "release/1.4", "limite": false},
+    {"cadeia": "release/v1.4.0", "limite": false},
+    {"cadeia": "feature/login/extra", "limite": false}
+  ]
+}
