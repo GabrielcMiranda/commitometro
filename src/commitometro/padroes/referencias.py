@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
+
 from . import ExpressaoRegular, REGISTRO
 
 PADRAO_REFERENCIA = (
@@ -28,3 +31,30 @@ REGISTRO["ER-05"] = ExpressaoRegular(
     padrao=PADRAO_REFERENCIA,
     grupos={1: "palavra-chave"},
 )
+
+_PALAVRAS_FECHAM = {
+    "close", "closes", "closed",
+    "fix", "fixes", "fixed",
+    "resolve", "resolves", "resolved",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class Referencia:
+    palavra_chave: str
+    fecha: bool
+    issues: tuple[str, ...]
+
+
+def validar_referencia(linha: str) -> Referencia | None:
+    correspondencia = re.fullmatch(PADRAO_REFERENCIA, linha)
+    if correspondencia is None:
+        return None
+    palavra_chave = correspondencia.group(1)
+    resto = linha[correspondencia.end(1):].lstrip(":").lstrip(" ")
+    issues = tuple(resto.split(", "))
+    return Referencia(
+        palavra_chave=palavra_chave,
+        fecha=palavra_chave.lower() in _PALAVRAS_FECHAM,
+        issues=issues,
+    )
