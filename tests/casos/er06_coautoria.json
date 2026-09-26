@@ -1,0 +1,28 @@
+{
+  "id": "ER-06",
+  "aceitas": [
+    {"cadeia": "Co-authored-by: Ana Souza <ana.souza@gmail.com>", "limite": false},
+    {"cadeia": "Co-authored-by: João Pedro de Miranda <joao@ufx.edu.br>", "limite": false},
+    {"cadeia": "Co-Authored-By: Bia <12345+bia@users.noreply.github.com>", "limite": false},
+    {"cadeia": "Co-authored-by: A <a@b.co>", "limite": true, "motivo": "nome e domínio mínimos"},
+    {"cadeia": "Co-authored-by: Élise Müller <elise_m@uni-x.de>", "limite": false},
+    {"cadeia": "Co-authored-By: Rui Costa <RUI.COSTA@EMPRESA.COM.BR>", "limite": false},
+    {"cadeia": "Co-authored-by: Maria Eduarda Lima <maria-lima@dominio-exemplo.com.br>", "limite": false},
+    {"cadeia": "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>", "limite": false},
+    {"cadeia": "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>", "limite": true, "motivo": "sufixo de nome com ponto e dois dígitos"}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "Co-authored-by: Ana Souza ana@x.com", "limite": false},
+    {"cadeia": "Co-authored-by: Ana <ana@localhost>", "limite": false},
+    {"cadeia": "Co-authored-by: <ana@x.com>", "limite": false},
+    {"cadeia": "co-authored-by: Ana <ana@x.com>", "limite": false},
+    {"cadeia": "Co-authored-by:Ana <ana@x.com>", "limite": false},
+    {"cadeia": "Co-authored-by: Ana  Souza <ana@x.com>", "limite": true, "motivo": "dois espaços entre as palavras do nome"},
+    {"cadeia": "Co-authored-by: Ana <ana@x.c0m>", "limite": false},
+    {"cadeia": "Co-Authored-By: Claude 5.5.5 <noreply@anthropic.com>", "limite": true, "motivo": "dois pontos no mesmo token de nome"},
+    {"cadeia": "Co-Authored-By: Claude 5. <noreply@anthropic.com>", "limite": true, "motivo": "ponto sem dígito depois"},
+    {"cadeia": "Co-authored-by: Ana <ana@x.com> ", "limite": true, "motivo": "espaço após o fechamento >"},
+    {"cadeia": "Co-authored-by: dependabot[bot] <bot@x.com>", "limite": false}
+  ]
+}
