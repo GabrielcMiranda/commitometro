@@ -1,0 +1,5 @@
+gitpython>=3.1
+pydriller>=2.6
+typer>=0.12
+rich>=13.7
+streamlit>=1.35
