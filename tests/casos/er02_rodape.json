@@ -1,0 +1,24 @@
+{
+  "id": "ER-02",
+  "aceitas": [
+    {"cadeia": "BREAKING CHANGE: remove suporte ao Python 3.11", "limite": false},
+    {"cadeia": "BREAKING-CHANGE: altera o formato do relatório", "limite": false},
+    {"cadeia": "Reviewed-by: Ana Souza", "limite": false},
+    {"cadeia": "Refs: #123", "limite": false},
+    {"cadeia": "Closes #42", "limite": false},
+    {"cadeia": "Co-authored-by: Ana <ana@x.com>", "limite": false},
+    {"cadeia": "Acked-by: x", "limite": true, "motivo": "valor de 1 símbolo"},
+    {"cadeia": "Signed-off-by: Bia <bia@ufx.br>", "limite": false}
+  ],
+  "rejeitadas": [
+    {"cadeia": "", "limite": true, "motivo": "cadeia vazia"},
+    {"cadeia": "BREAKING CHANGE:sem espaço", "limite": false},
+    {"cadeia": "breaking change: minúsculo com espaço", "limite": true, "motivo": "só o token exato BREAKING CHANGE pode ter espaço"},
+    {"cadeia": "Reviewed by: Ana", "limite": false},
+    {"cadeia": "-Token: valor", "limite": false},
+    {"cadeia": "Token-: valor", "limite": false},
+    {"cadeia": "Token:  valor", "limite": false},
+    {"cadeia": "Token #", "limite": false},
+    {"cadeia": "Closes#42", "limite": false}
+  ]
+}
