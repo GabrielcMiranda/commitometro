@@ -1,0 +1,22 @@
+fdd24443e6b3c181c20fc16e7998daaca4f3af4eAna Souzaana.souza@example.com2026-08-01T09:12:03-03:00feat(auth): adiciona login com e-mail e senhacd2e8660af888eaabe6bcca24c5314d5830da65fAna Souzaana.souza@example.com2026-08-01T14:30:11-03:00feat(auth): adiciona recuperação de senha por e-mail
+
+Closes #1256aad40350ebfb6285e9281b6188c73c4fa59962João Pedro Limajoao.lima@example.com2026-08-02T10:05:44-03:00fix(carrinho): corrige cálculo do frete para múltiplos itens
+
+Closes #15b971978ee3f09c3a123ef6e481330f1c4c69dd49Beatriz Nogueirabeatriz.nogueira@example.com2026-08-02T16:22:09-03:00docs: adiciona instruções de instalação no READMEc25ff9ef183e73b9969d3b215005a4c27bee0702Rui Costarui.costa@example.com2026-08-03T08:40:00-03:00test(carrinho): cobre cálculo de frete com item único e vazioa21306cd878e41ce1475432eb0597a45e15c81b6Ana Souzaana.souza@example.com2026-08-03T11:15:37-03:00Adiciona botão de finalizar compra4c66b9a3f9248476bedf94be536d4ac8f424f2b2João Pedro Limajoao.lima@example.com2026-08-04T09:00:12-03:00feat(pagamento): adiciona integração com gateway de cartão
+
+A integração usa o SDK oficial do gateway e trata timeout
+com uma nova tentativa automática.
+
+Closes #18569a8ce2e59929d1cf171fb58439a5a448dd75d9Beatriz Nogueirabeatriz.nogueira@example.com2026-08-04T13:47:56-03:00refactor(catalogo): extrai filtro de categoria para função própriaada3ca9d90e77ead1ff3b8584b359d5d061e8f46Rui Costarui.costa@example.com2026-08-05T10:30:00-03:00fix(catalogo): corrige paginação exibindo página erradac8efd1a8898760406b767df098bf2d003c52a028Ana Souzaana.souza@example.com2026-08-05T15:02:41-03:00feat(pagamento)!: remove suporte a boleto bancário
+
+BREAKING CHANGE: o método de pagamento 'boleto' não é mais aceito
+pela API; clientes devem migrar para cartão ou pix.
+
+Closes #200a87c2c2f7b502484ad89b54977b736b7acd8a3eJoão Pedro Limajoao.lima@example.com2026-08-06T09:18:29-03:00fix(auth) : corrige expiração do token de sessão164576a17dc4194178f537ffbfd9406bea5c29a8Beatriz Nogueirabeatriz.nogueira@example.com2026-08-06T14:00:00-03:00chore(deps): atualiza dependências de desenvolvimentoab11c664c227439e33cdf710c003c1255b39017fRui Costarui.costa@example.com2026-08-07T11:11:11-03:00feat(notificacoes): adiciona e-mail de confirmação de pedido
+
+Co-authored-by: Ana Souza <ana.souza@example.com>4bd7c7889b3f2fd19337c0578b4c8321a6f9029fAna Souzaana.souza@example.com2026-08-07T16:45:20-03:00ci: adiciona workflow de deploy automático para staging314d430fbcf181ef1c23c96fe119c1771fe7f366João Pedro Limajoao.lima@example.com2026-08-08T08:55:03-03:00Corrige: bug no filtro de preço6509889d3f56590d372819785f534d85c00f91e9Beatriz Nogueirabeatriz.nogueira@example.com2026-08-08T13:20:14-03:00feat(catalogo): adiciona ordenação por preço e avaliação90904f3652aedaf85aa177933935135949b12a45Rui Costarui.costa@example.com2026-08-09T09:30:45-03:00test(pagamento): cobre timeout e nova tentativa do gatewayb59ac508e0ae013eb9ebd1e23549ec1b5c1f2eb9Ana Souzaana.souza@example.com2026-08-09T15:10:00-03:00perf(catalogo): reduz consultas ao banco na listagem de produtosf34fa591c3733837b96838eb13de10782d7ce88aJoão Pedro Limajoao.lima@example.com2026-08-10T10:00:00-03:00feat(carrinho): adiciona cupom de desconto
+
+Closes #24
+Co-authored-by: Beatriz Nogueira <beatriz.nogueira@example.com>548a64b480c5929b9f364461bbd1aa3c821a805eBeatriz Nogueirabeatriz.nogueira@example.com2026-08-10T14:33:19-03:00fix(notificacoes): corrige e-mail duplicado em pedidos reenviadosba976d4be25048fd6c607abf11fe80be238f802cRui Costarui.costa@example.com2026-08-11T09:05:00-03:00style(catalogo): ajusta espaçamento e responsividade dos cards9bcdfd23abf93140ebe3a805141c0886f7cf6372Ana Souzaana.souza@example.com2026-08-11T13:41:52-03:00feature(pagamento): adiciona suporte a pixb1731f03583c510ef12f102d93e949c5613860fdJoão Pedro Limajoao.lima@example.com2026-08-12T08:20:00-03:00feat(carrinho): valida estoque antes de confirmar o pedido
+
+Refs: #260fa8b48a112063ddecc6b54e4468d883d86fe7ebBeatriz Nogueirabeatriz.nogueira@example.com2026-08-12T15:55:30-03:00fix(carrinho):remove item duplicado da listaa41d5c2a17506fe91f181347b3e2d4e813957d23Rui Costarui.costa@example.com2026-08-13T10:10:10-03:00docs(catalogo): documenta filtros disponíveis na API
