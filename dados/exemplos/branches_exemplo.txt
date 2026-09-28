@@ -1,0 +1,8 @@
+main
+develop
+feature/checkout-pix
+bugfix/frete-duplicado
+release/1.1.0
+docs/atualiza-readme
+master
+feature/login/extra
