@@ -13,7 +13,19 @@ def _agrupar_por_email(analises: list[AnaliseCommit]) -> dict[str, list[AnaliseC
     return grupos
 
 
-def _conformidade_do_autor(email: str, analises: list[AnaliseCommit]) -> ConformidadeAutor:
+def _contar_coautorias(analises: list[AnaliseCommit]) -> Counter[str]:
+    contagem: Counter[str] = Counter()
+    for analise in analises:
+        autor = analise.commit.autor_email.lower()
+        for email in set(analise.coautores):
+            if email != autor:
+                contagem[email] += 1
+    return contagem
+
+
+def _conformidade_do_autor(
+    email: str, analises: list[AnaliseCommit], coautorias_recebidas: int
+) -> ConformidadeAutor:
     validos = [analise for analise in analises if analise.valido]
     nome = Counter(analise.commit.autor_nome for analise in analises).most_common(1)[0][0]
     return ConformidadeAutor(
@@ -25,12 +37,16 @@ def _conformidade_do_autor(email: str, analises: list[AnaliseCommit]) -> Conform
         distribuicao_por_tipo=dict(Counter(analise.tipo for analise in validos)),
         commits_com_issue=sum(1 for analise in analises if analise.issues),
         quebras_declaradas=sum(1 for analise in analises if analise.quebra),
-        coautorias_recebidas=0,
+        coautorias_recebidas=coautorias_recebidas,
         invalidos=tuple(analise for analise in analises if not analise.valido),
     )
 
 
 def calcular_conformidade(analises: Iterable[AnaliseCommit]) -> list[ConformidadeAutor]:
-    grupos = _agrupar_por_email(list(analises))
-    resultado = [_conformidade_do_autor(email, lista) for email, lista in grupos.items()]
+    lista_analises = list(analises)
+    grupos = _agrupar_por_email(lista_analises)
+    coautorias = _contar_coautorias(lista_analises)
+    resultado = [
+        _conformidade_do_autor(email, lista, coautorias[email]) for email, lista in grupos.items()
+    ]
     return sorted(resultado, key=lambda autor: (-autor.total_commits, autor.nome))
