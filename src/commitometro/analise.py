@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from commitometro.modelos import AnaliseCommit, Commit
 from commitometro.padroes.commits import Rodape, validar_cabecalho, validar_rodape
+from commitometro.padroes.referencias import validar_coautoria, validar_referencia
 
 
 def _paragrafos(mensagem: str) -> list[list[str]]:
@@ -28,9 +29,24 @@ def bloco_de_rodape(mensagem: str) -> list[Rodape]:
     return rodapes
 
 
+def _issues_do_corpo(linhas: list[str]) -> tuple[str, ...]:
+    issues: list[str] = []
+    for linha in linhas:
+        referencia = validar_referencia(linha)
+        if referencia is not None:
+            issues.extend(referencia.issues)
+    return tuple(dict.fromkeys(issues))
+
+
+def _coautores_do_corpo(linhas: list[str]) -> tuple[str, ...]:
+    emails = (validar_coautoria(linha) for linha in linhas)
+    return tuple(dict.fromkeys(coautor.email for coautor in emails if coautor is not None))
+
+
 def analisar_commit(commit: Commit) -> AnaliseCommit:
     linhas = commit.mensagem.splitlines()
     primeira_linha = linhas[0] if linhas else ""
+    corpo = linhas[1:]
     cabecalho = validar_cabecalho(primeira_linha)
     quebra_no_rodape = any(rodape.quebra for rodape in bloco_de_rodape(commit.mensagem))
     return AnaliseCommit(
@@ -40,6 +56,6 @@ def analisar_commit(commit: Commit) -> AnaliseCommit:
         quebra=(cabecalho is not None and cabecalho.quebra) or quebra_no_rodape,
         valido=cabecalho is not None,
         diagnostico=None,
-        issues=(),
-        coautores=(),
+        issues=_issues_do_corpo(corpo),
+        coautores=_coautores_do_corpo(corpo),
     )
