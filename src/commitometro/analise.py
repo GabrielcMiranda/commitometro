@@ -4,6 +4,41 @@ from commitometro.modelos import AnaliseCommit, Commit
 from commitometro.padroes.commits import Rodape, validar_cabecalho, validar_rodape
 from commitometro.padroes.referencias import validar_coautoria, validar_referencia
 
+TIPOS_ACEITOS = (
+    "feat", "fix", "docs", "style", "refactor", "perf",
+    "test", "build", "ci", "chore", "revert",
+)
+
+
+def diagnosticar_cabecalho(linha: str) -> str:
+    if not linha.strip():
+        return "o cabeçalho está vazio."
+    if ": " not in linha:
+        if ":" in linha:
+            return "falta um espaço depois de ':'."
+        return "falta o separador ': ' entre o tipo e a descrição."
+    prefixo, descricao = linha.split(": ", 1)
+    if prefixo.endswith(" "):
+        return "não pode haver espaço antes de ':'."
+    prefixo = prefixo.removesuffix("!")
+    tipo, abre_escopo, resto = prefixo.partition("(")
+    if "!" in tipo:
+        return "o '!' deve vir depois do escopo, logo antes de ':'."
+    if tipo.lower() in TIPOS_ACEITOS and tipo != tipo.lower():
+        return f"o tipo '{tipo}' deve ser minúsculo."
+    if tipo not in TIPOS_ACEITOS:
+        return f"o tipo '{tipo}' não é aceito; tipos aceitos: {', '.join(TIPOS_ACEITOS)}."
+    if abre_escopo:
+        if not resto.endswith(")"):
+            return "o escopo precisa ser fechado com ')' logo antes de ':'."
+        escopo = resto[:-1]
+        if not escopo:
+            return "o escopo entre parênteses está vazio."
+        return f"o escopo '{escopo}' deve ter só letras minúsculas, dígitos e hífens simples."
+    if not descricao or descricao.startswith(" "):
+        return "a descrição está vazia ou começa com espaço."
+    return "o cabeçalho não segue o formato tipo(escopo)!: descrição."
+
 
 def _paragrafos(mensagem: str) -> list[list[str]]:
     paragrafos: list[list[str]] = []
@@ -55,7 +90,7 @@ def analisar_commit(commit: Commit) -> AnaliseCommit:
         escopo=cabecalho.escopo if cabecalho else None,
         quebra=(cabecalho is not None and cabecalho.quebra) or quebra_no_rodape,
         valido=cabecalho is not None,
-        diagnostico=None,
+        diagnostico=None if cabecalho else diagnosticar_cabecalho(primeira_linha),
         issues=_issues_do_corpo(corpo),
         coautores=_coautores_do_corpo(corpo),
     )
