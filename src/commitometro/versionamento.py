@@ -25,7 +25,23 @@ def _plural(quantidade: int, singular: str, plural: str) -> str:
     return f"{quantidade} {singular if quantidade == 1 else plural}"
 
 
-def sugerir_versao(tags: Iterable[str], analises: Iterable[AnaliseCommit]) -> SugestaoVersao:
+def _proximo_numero_de_pre(tags: list[str], numeros: tuple[int, int, int], rotulo: str) -> int:
+    existentes = [
+        versao.pre_numero or 0
+        for versao in (validar_versao(tag) for tag in tags)
+        if versao is not None
+        and (versao.maior, versao.menor, versao.correcao) == numeros
+        and versao.pre_rotulo == rotulo
+    ]
+    return max(existentes) + 1 if existentes else 1
+
+
+def sugerir_versao(
+    tags: Iterable[str],
+    analises: Iterable[AnaliseCommit],
+    pre: str | None = None,
+) -> SugestaoVersao:
+    tags = list(tags)
     base = ultima_versao_estavel(tags)
     tag_anterior, versao = base if base else (None, Versao(0, 0, 0, None, None, True))
     prefixo = "v" if versao.prefixo_v else ""
@@ -51,9 +67,13 @@ def sugerir_versao(tags: Iterable[str], analises: Iterable[AnaliseCommit]) -> Su
         tipo = "nenhum"
         motivo = "nenhum commit válido com quebra, feat, fix ou perf"
 
+    versao_sugerida = prefixo + ".".join(str(numero) for numero in numeros)
+    if pre is not None and tipo != "nenhum":
+        versao_sugerida += f"-{pre}.{_proximo_numero_de_pre(tags, numeros, pre)}"
+
     return SugestaoVersao(
         versao_anterior=tag_anterior,
-        versao_sugerida=prefixo + ".".join(str(numero) for numero in numeros),
+        versao_sugerida=versao_sugerida,
         tipo_incremento=tipo,
         motivo=(
             f"{motivo} → versão {_NOME_DO_INCREMENTO[tipo]}"
