@@ -4,6 +4,7 @@ from collections import Counter
 from collections.abc import Iterable
 
 from commitometro.modelos import AnaliseCommit, ConformidadeAutor
+from commitometro.padroes.versionamento import validar_branch, validar_versao
 
 
 def _agrupar_por_email(analises: list[AnaliseCommit]) -> dict[str, list[AnaliseCommit]]:
@@ -50,3 +51,17 @@ def calcular_conformidade(analises: Iterable[AnaliseCommit]) -> list[Conformidad
         _conformidade_do_autor(email, lista, coautorias[email]) for email, lista in grupos.items()
     ]
     return sorted(resultado, key=lambda autor: (-autor.total_commits, autor.nome))
+
+
+def classificar_branches(nomes: Iterable[str]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    lista = list(nomes)
+    validas = tuple(nome for nome in lista if validar_branch(nome) is not None)
+    invalidas = tuple(nome for nome in lista if validar_branch(nome) is None)
+    return validas, invalidas
+
+
+def classificar_tags(tags: Iterable[str]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    lista = list(tags)
+    validas = tuple(tag for tag in lista if validar_versao(tag) is not None)
+    invalidas = tuple(tag for tag in lista if validar_versao(tag) is None)
+    return validas, invalidas
