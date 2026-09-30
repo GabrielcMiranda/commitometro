@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
+
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 
-from commitometro.modelos import RelatorioAuditoria
+from commitometro.modelos import AnaliseCommit, Commit, ConformidadeAutor, RelatorioAuditoria
 
 
 def _cor_percentual(percentual: float) -> str:
@@ -86,3 +88,100 @@ def renderizar_tabela(console: Console, relatorio: RelatorioAuditoria) -> None:
                 analise.commit.hash[:7], escape(primeira_linha), escape(analise.diagnostico or "")
             )
         console.print(tabela_invalidos)
+
+
+def _commit_para_dict(commit: Commit) -> dict:
+    return {
+        "hash": commit.hash,
+        "autor_nome": commit.autor_nome,
+        "autor_email": commit.autor_email,
+        "data": commit.data.isoformat(),
+        "mensagem": commit.mensagem,
+        "merge": commit.merge,
+    }
+
+
+def _analise_para_dict(analise: AnaliseCommit) -> dict:
+    return {
+        "commit": _commit_para_dict(analise.commit),
+        "tipo": analise.tipo,
+        "escopo": analise.escopo,
+        "quebra": analise.quebra,
+        "valido": analise.valido,
+        "diagnostico": analise.diagnostico,
+        "issues": list(analise.issues),
+        "coautores": list(analise.coautores),
+    }
+
+
+def _autor_para_dict(autor: ConformidadeAutor) -> dict:
+    return {
+        "nome": autor.nome,
+        "email": autor.email,
+        "total_commits": autor.total_commits,
+        "commits_validos": autor.commits_validos,
+        "percentual_conformidade": autor.percentual_conformidade,
+        "distribuicao_por_tipo": autor.distribuicao_por_tipo,
+        "commits_com_issue": autor.commits_com_issue,
+        "quebras_declaradas": autor.quebras_declaradas,
+        "coautorias_recebidas": autor.coautorias_recebidas,
+        "invalidos": [_analise_para_dict(analise) for analise in autor.invalidos],
+    }
+
+
+def _relatorio_para_dict(relatorio: RelatorioAuditoria) -> dict:
+    return {
+        "por_autor": [_autor_para_dict(autor) for autor in relatorio.por_autor],
+        "branches_validas": list(relatorio.branches_validas),
+        "branches_invalidas": list(relatorio.branches_invalidas),
+        "tags_validas": list(relatorio.tags_validas),
+        "tags_invalidas": list(relatorio.tags_invalidas),
+        "sugestao_versao": {
+            "versao_anterior": relatorio.sugestao_versao.versao_anterior,
+            "versao_sugerida": relatorio.sugestao_versao.versao_sugerida,
+            "tipo_incremento": relatorio.sugestao_versao.tipo_incremento,
+            "motivo": relatorio.sugestao_versao.motivo,
+        },
+    }
+
+
+def para_json(relatorio: RelatorioAuditoria) -> str:
+    return json.dumps(_relatorio_para_dict(relatorio), ensure_ascii=False, indent=2)
+
+
+def para_markdown(relatorio: RelatorioAuditoria) -> str:
+    linhas = ["# Relatório de auditoria", "", "## Conformidade por autor", ""]
+    linhas.append("| Autor | Commits | Válidos | % conformidade | Coautorias recebidas |")
+    linhas.append("|---|---|---|---|---|")
+    for autor in relatorio.por_autor:
+        linhas.append(
+            f"| {autor.nome} | {autor.total_commits} | {autor.commits_validos} | "
+            f"{autor.percentual_conformidade}% | {autor.coautorias_recebidas} |"
+        )
+
+    linhas += ["", "## Branches", ""]
+    linhas += [f"- ✅ `{nome}`" for nome in relatorio.branches_validas]
+    linhas += [f"- ❌ `{nome}`" for nome in relatorio.branches_invalidas]
+
+    linhas += ["", "## Tags", ""]
+    linhas += [f"- ✅ `{nome}`" for nome in relatorio.tags_validas]
+    linhas += [f"- ❌ `{nome}`" for nome in relatorio.tags_invalidas]
+
+    sugestao = relatorio.sugestao_versao
+    linhas += [
+        "",
+        "## Sugestão de versão",
+        "",
+        f"{sugestao.versao_anterior or '(nenhuma)'} → **{sugestao.versao_sugerida}**",
+        "",
+        sugestao.motivo,
+    ]
+
+    invalidos = [analise for autor in relatorio.por_autor for analise in autor.invalidos]
+    if invalidos:
+        linhas += ["", "## Commits inválidos", "", "| Hash | Mensagem | Motivo |", "|---|---|---|"]
+        for analise in invalidos:
+            primeira_linha = analise.commit.mensagem.splitlines()[0] if analise.commit.mensagem else ""
+            linhas.append(f"| `{analise.commit.hash[:7]}` | {primeira_linha} | {analise.diagnostico} |")
+
+    return "\n".join(linhas) + "\n"
