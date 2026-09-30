@@ -616,6 +616,62 @@ blocos, além do diagrama completo (apêndice), para não sobrecarregar a leitur
 
 ## 7. Testes e análise dos resultados
 
+### 7.1 Estratégia de testes
+
+A suíte (`pytest`, 243 casos no total) combina quatro camadas:
+
+1. **Unitários e parametrizados por ER:** `tests/test_er0X_*.py` roda cada cadeia de
+   `tests/casos/er0X_*.json` (aceitas, rejeitadas e casos-limite marcados) contra a função de
+   validação correspondente em `padroes/`.
+2. **Equivalência AFNε × ER × casos oficiais:** `tests/test_afne_equivalencia.py` (Etapa 3
+   deste plano) carrega cada `ER-0X.jff` + legenda e verifica, para toda cadeia dos mesmos
+   JSON de casos, que `AFNe.aceita(cadeia)` concorda tanto com o resultado esperado quanto
+   com `REGISTRO["ER-0X"].compilada.fullmatch(cadeia)` — a prova de que ER formal e AFNε
+   reconhecem a mesma linguagem (seção 3.3) não é apenas teórica, é verificada por código a
+   cada execução do CI.
+3. **Equivalência por amostragem aleatória:** o mesmo arquivo gera, por ER, 2000 cadeias
+   aleatórias curtas sobre um alfabeto realista (semente fixa, para reprodutibilidade) e
+   compara `AFNe.aceita()` com `re.fullmatch()` — complementa os casos curados, que não têm
+   como cobrir todo o espaço de cadeias possível. As seis ERs passaram nessa amostragem sem
+   nenhuma divergência (0 em 2000 tentativas por ER, 12&nbsp;000 no total).
+4. **Leitores, análise, conformidade, versionamento, auditoria, relatório e CLI:** testes de
+   integração cobrindo o restante do pacote (`leitores/`, `analise.py`, `conformidade.py`,
+   `auditoria.py`, `relatorio.py`, `cli.py`), incluindo tratamento de entradas inválidas.
+
+### 7.2 Simulação passo a passo (ε-fecho) — ER-03
+
+### 7.3 Resumo por ER
+
+| ER | Casos | Aceitas | Rejeitadas | Casos-limite | Resultado |
+|---|---|---|---|---|---|
+| ER-01 | 19 | 8 | 11 | 4 | 19/19 corretos |
+| ER-02 | 17 | 8 | 9 | 3 | 17/17 corretos |
+| ER-03 | 18 | 8 | 10 | 2 | 18/18 corretos |
+| ER-04 | 18 | 8 | 10 | 2 | 18/18 corretos |
+| ER-05 | 18 | 8 | 10 | 2 | 18/18 corretos |
+| ER-06 | 21 | 9 | 12 | 6 | 21/21 corretos |
+| **Total** | **111** | **49** | **62** | **19** | **111/111 corretos** |
+
+Tabela detalhada, cadeia por cadeia, em
+[`resultados/ANALISE_RESULTADOS.md`](../../resultados/ANALISE_RESULTADOS.md).
+
+### 7.4 Cobertura
+
+Cobertura total da suíte: **98,59%** (relatório completo em
+[`resultados/cobertura.txt`](../../resultados/cobertura.txt); mínimo exigido no CI: 85%).
+Os poucos pontos não cobertos são ramos defensivos (por exemplo, o fallback de
+`diagnosticar_cabecalho` mencionado na seção 5.2), nunca a lógica das seis ERs em si — cada
+uma delas tem 100% de cobertura de linha na sua função de validação.
+
+### 7.5 Falsos positivos/negativos
+
+Nenhum falso positivo ou falso negativo foi observado nos 111 casos oficiais, nos 12 000
+testes aleatórios de equivalência AFNε × ER, nem na autoauditoria do próprio repositório
+(seção 8). As únicas rejeições "inesperadas" à primeira vista são as limitações documentadas
+por ER (seção 9) — por exemplo, `Org/Repo#3` (ER-05) e `dependabot[bot]` (ER-06) são
+rejeitados por decisão de projeto, não por erro da expressão regular ou do autômato: a
+expressão implementa exatamente a ER formal documentada.
+
 ## 8. Resultados da aplicação
 
 ## 9. Limitações e melhorias
