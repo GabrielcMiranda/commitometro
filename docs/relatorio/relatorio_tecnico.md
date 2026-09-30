@@ -40,6 +40,37 @@ Gabriel Miranda · Yago Schnorr · João Pedro Silva
 
 ## 2. Introdução
 
+Repositórios Git colaborativos dependem de convenções — como as mensagens de commit
+padronizam a comunicação entre quem escreve o código e quem lê o histórico depois (revisor,
+gerador de changelog, ferramenta de CI). Na prática, porém, essas convenções raramente são
+verificadas de forma automática e sistemática: cada integrante segue o padrão "de memória",
+e desvios só são percebidos quando já causaram um problema (um changelog manual, uma tag de
+versão fora de ordem, uma issue nunca fechada porque a palavra-chave foi digitada errado).
+
+O Commitômetro nasce dessa lacuna. Ele lê o histórico de um repositório Git — local, via
+`GitPython`/`PyDriller`, ou exportado em arquivo de log, para auditar repositórios sem
+acesso direto — e usa **seis expressões regulares** para validar, em cada commit, cinco
+aspectos distintos:
+
+1. o cabeçalho da mensagem, no formato Conventional Commits (ER-01);
+2. as linhas de rodapé (trailers), incluindo marcação de quebra de compatibilidade (ER-02);
+3. tags de versão semântica, para ordenar releases e sugerir a próxima versão (ER-03);
+4. nomes de branch, quanto ao fluxo `main`/`develop` e prefixos convencionais (ER-04);
+5. referências e fechamento de issues (ER-05) e linhas de coautoria (ER-06).
+
+O objetivo do trabalho, no contexto da disciplina, é duplo: entregar uma ferramenta que
+realmente resolve esse problema de auditoria, e demonstrar de ponta a ponta a relação entre
+**expressão regular**, **autômato finito com movimentos vazios (AFNε)** e **implementação em
+código** — a mesma cadeia de equivalências estudada em Linguagens Formais e Autômatos,
+aplicada a um problema real e não a um exercício isolado.
+
+**Escopo:** o Commitômetro audita convenções sintáticas verificáveis por expressão regular
+sobre uma única linha (ou um pequeno conjunto delas) de cada commit; não avalia qualidade de
+código, tamanho de diff, nem semântica da mudança. As seis expressões regulares e suas
+implementações em `src/commitometro/padroes/` são o núcleo da auditoria; o restante do
+pacote (leitores de repositório, cálculo de conformidade, sugestão de versão, relatório,
+CLI e interface web) existe para tornar esse núcleo utilizável em um fluxo de trabalho real.
+
 ## 3. Fundamentação teórica
 
 ## 4. Arquitetura e implementação
