@@ -73,8 +73,10 @@ garante `scripts/afne.py`, usado no teste de equivalência da Etapa 3.
 | ER-02 | letras de `BREAKING CHANGE`, `- : #` | `L` = letra · `x` = C₀ · `y` = C |
 | ER-03 | `v`, `alpha`, `beta`, `rc`, `. -` | `P` = `[1-9]` (nunca uma classe `D` genérica — ver regra 5) |
 | ER-04 | letras minúsculas de `main/develop/feature/...`, `/` | `A` = `[a-z0-9]` (mesma da ER-01); reaproveita o sub-AFNε de N da ER-03 |
-| ER-05 | letras de `close/fix/resolve/refs` (minúsculas e maiúsculas `C F R`) | `O` = `[a-z0-9-]` · `Q` = `O ∪ {., _}` (evita colidir com o literal `R`) · `P` = `[1-9]` |
-| ER-06 | `C A a B b`, `.` | `1` = L (letra) · `5` = D (dígito) · `2` = U · `3` = H · `4` = Z |
+| ER-05 | letras de `close/fix/resolve/refs` (minúsculas e maiúsculas `C F R`) | `O` = `[a-z0-9-]` · `Q` = `O ∪ {., _}` (evita colidir com o literal `R`) · `P` = `[1-9]` · `D` = `[0-9]` |
+| ER-06 | `C A a B b`, `.`, `<`, `>`, `@` | `1` = M (= L ∪ D) · `2` = U · `3` = H · `4` = Z; espaço representado por **`6`**, não `_` (aqui `_` é o sublinhado literal do e-mail) |
 
 Os símbolos de classe usam dígitos na ER-06 porque **todas** as letras (maiúsculas e
-minúsculas) já são literais em `Co-Authored-By`.
+minúsculas) já são literais em `Co-Authored-By`. Pelo mesmo motivo, o símbolo de espaço
+teve que mudar de `_` (convenção geral, regra 4) para `6`: nesta ER o `_` é o próprio
+caractere de sublinhado, que pode aparecer literalmente dentro do e-mail.
