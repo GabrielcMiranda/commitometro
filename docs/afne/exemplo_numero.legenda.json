@@ -1,0 +1,21 @@
+{
+  "id": "exemplo_numero",
+  "classes": {
+    "P": {
+      "intervalos": [
+        [
+          "1",
+          "9"
+        ]
+      ]
+    },
+    "D": {
+      "intervalos": [
+        [
+          "0",
+          "9"
+        ]
+      ]
+    }
+  }
+}
