@@ -768,8 +768,74 @@ calculada para o estado do repositório no momento da auditoria foi `v0.3.0 → 
 
 ## 10. Contribuições
 
+Cada integrante ficou responsável por duas etapas completas em cada um dos dois planos de
+trabalho (implementação; AFNε, relatório e apresentação), de módulo/documento inteiro a
+módulo/documento inteiro, para que a contribuição de cada um seja auditável commit a commit
+pelo próprio Commitômetro — o mesmo critério que a ferramenta aplica ao repositório é
+aplicado à divisão do trabalho que a produziu.
+
+| Integrante | Plano de implementação | Plano de AFNε/relatório/apresentação | ER defendida na apresentação |
+|---|---|---|---|
+| Gabriel Miranda (A) | Etapas 1–2 — esqueleto do pacote e as 6 ERs | Etapas 3–4 — validação cruzada AFNε×ER e relatório técnico | ER-01, ER-02 |
+| Yago Schnorr (B) | Etapas 3–4 — leitura de repositório e regras de negócio | Etapas 5–6 — apresentação e contribuições/entrega | ER-03, ER-04 |
+| João Pedro Silva — JPSSmaths (C) | Etapas 5–6 — CLI/interface web e documentação final | Etapas 1–2 — convenção e construção dos 6 AFNε | ER-05, ER-06 |
+
+Resumo detalhado, com a lista de branches/PRs por pessoa, em
+[`CONTRIBUICOES.md`](../../CONTRIBUICOES.md).
+
 ## 11. Conclusão
+
+Este trabalho percorreu a cadeia completa de Linguagens Formais e Autômatos sobre um
+problema real: seis linguagens regulares nasceram como convenções de engenharia de software
+já em uso no mercado (Conventional Commits, SemVer, git trailers, palavras-chave de issue do
+GitHub), foram formalizadas como expressões regulares sobre um alfabeto explícito, verificadas
+como equivalentes a um autômato finito com movimentos vazios construído por Thompson — e
+então implementadas, testadas e usadas para auditar, com sucesso, o próprio repositório que as
+contém. A equivalência ER ↔ AFNε não ficou no papel: o teste automatizado da seção 7.1 a
+confirma a cada execução do CI, para as seis ERs, sobre os casos oficiais e sobre 12 000
+cadeias aleatórias adicionais, sem nenhuma divergência.
+
+A extensão da ER-06 para aceitar coautoria de assistentes de IA é o exemplo mais concreto de
+que essas seis linguagens não foram escolhidas para caber num exercício — foram ajustadas
+para descrever, com precisão, uma convenção real observada no próprio histórico do projeto,
+o que só foi possível porque a teoria por trás (classes de caracteres, união, fecho,
+concatenação) generaliza sem esforço para o caso novo.
 
 ## Referências
 
+- Hopcroft, J. E.; Motwani, R.; Ullman, J. D. *Introduction to Automata Theory, Languages,
+  and Computation*.
+- Menezes, P. B. *Linguagens Formais e Autômatos*.
+- Material da disciplina (guia do professor de expressões regulares e autômatos).
+- Documentação do módulo [`re`](https://docs.python.org/3/library/re.html) do Python.
+- [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).
+- [Semantic Versioning 2.0.0](https://semver.org/).
+- [`git-interpret-trailers`](https://git-scm.com/docs/git-interpret-trailers).
+- GitHub Docs — [Linking a pull request to an issue using a keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) e
+  [Creating a commit with multiple authors](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
+- [GitPython](https://gitpython.readthedocs.io/), [PyDriller](https://pydriller.readthedocs.io/),
+  [Typer](https://typer.tiangolo.com/), [Rich](https://rich.readthedocs.io/),
+  [Streamlit](https://docs.streamlit.io/), [pytest](https://docs.pytest.org/).
+- [JFLAP](http://www.jflap.org/).
+
 ## Apêndices
+
+### Apêndice A — Diagramas completos dos AFNε
+
+Os diagramas completos (não a visão em blocos) de cada ER, exportados do `.jff`
+correspondente: [ER-01](../afne/ER-01.png) · [ER-02](../afne/ER-02.png) ·
+[ER-03](../afne/ER-03.png) · [ER-04](../afne/ER-04.png) · [ER-05](../afne/ER-05.png) ·
+[ER-06](../afne/ER-06.png) — e as respectivas tabelas de transição completas, em
+`docs/afne/ER-0X.md` (linkadas na seção 6.1–6.6).
+
+### Apêndice B — Lista integral de casos de teste
+
+Os 111 casos curados (aceitos, rejeitados e casos-limite, um arquivo por ER) que sustentam a
+seção 7:
+
+- [`tests/casos/er01_cabecalho.json`](../../tests/casos/er01_cabecalho.json)
+- [`tests/casos/er02_rodape.json`](../../tests/casos/er02_rodape.json)
+- [`tests/casos/er03_versao.json`](../../tests/casos/er03_versao.json)
+- [`tests/casos/er04_branch.json`](../../tests/casos/er04_branch.json)
+- [`tests/casos/er05_referencia.json`](../../tests/casos/er05_referencia.json)
+- [`tests/casos/er06_coautoria.json`](../../tests/casos/er06_coautoria.json)
