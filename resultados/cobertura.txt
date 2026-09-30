@@ -1,0 +1,30 @@
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+=============================== tests coverage ================================
+______________ coverage: platform win32, python 3.12.10-final-0 _______________
+
+Name                                        Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------
+src\commitometro\__init__.py                    1      0   100%
+src\commitometro\__main__.py                    3      3     0%   1-4
+src\commitometro\analise.py                    70      1    99%   40
+src\commitometro\auditoria.py                  35      0   100%
+src\commitometro\cli.py                        97      0   100%
+src\commitometro\conformidade.py               38      0   100%
+src\commitometro\erros.py                       3      0   100%
+src\commitometro\leitores\__init__.py           0      0   100%
+src\commitometro\leitores\arquivo.py           29      0   100%
+src\commitometro\leitores\repositorio.py       45      4    91%   35-36, 48-49
+src\commitometro\modelos.py                    47      0   100%
+src\commitometro\padroes\__init__.py           20      0   100%
+src\commitometro\padroes\commits.py            33      0   100%
+src\commitometro\padroes\referencias.py        33      0   100%
+src\commitometro\padroes\versionamento.py      48      0   100%
+src\commitometro\relatorio.py                  88      1    99%   18
+src\commitometro\versionamento.py              48      0   100%
+-------------------------------------------------------------------------
+TOTAL                                         638      9    99%
+Coverage JSON written to file coverage.json
+218 passed in 8.17s
