@@ -5,9 +5,12 @@ from typing import Optional
 
 import typer
 from rich.console import Console
+from rich.markup import escape
+from rich.table import Table
 
 from commitometro.auditoria import auditar as executar_auditoria
 from commitometro.erros import EntradaInvalidaError
+from commitometro.padroes import REGISTRO
 from commitometro.relatorio import para_json, para_markdown, renderizar_tabela
 
 app = typer.Typer(help="Auditor de convenções de commits e versionamento em repositórios Git.")
@@ -27,6 +30,11 @@ def _escrever_saida(texto: str, saida: Optional[Path]) -> None:
         print(texto)
     else:
         saida.write_text(texto, encoding="utf-8")
+
+
+def _normalizar_id_er(bruto: str) -> str:
+    digitos = "".join(caractere for caractere in bruto if caractere.isdigit())
+    return f"ER-{digitos.zfill(2)}" if digitos else bruto.upper()
 
 
 @app.command()
@@ -59,3 +67,32 @@ def auditar(
         total_invalidos = sum(len(autor.invalidos) for autor in relatorio.por_autor)
         if total_invalidos:
             raise typer.Exit(code=1)
+
+
+@app.command()
+def validar(er: str, cadeia: str) -> None:
+    chave = _normalizar_id_er(er)
+    expressao = REGISTRO.get(chave)
+    if expressao is None:
+        raise EntradaInvalidaError(
+            f"ER desconhecida: '{er}'. IDs válidos: {', '.join(sorted(REGISTRO))}."
+        )
+    console = Console()
+    console.print(f"[bold]{expressao.id}[/bold] — {escape(expressao.nome)}")
+    console.print(f"ER formal: {escape(expressao.formal)}")
+    console.print(f"Padrão no código: {escape(expressao.padrao)}")
+
+    correspondencia = expressao.compilada.fullmatch(cadeia)
+    if correspondencia is None:
+        console.print(f"[red]rejeitada[/red]: '{escape(cadeia)}' não casa com o padrão de {expressao.id}.")
+        return
+
+    console.print(f"[green]aceita[/green]: '{escape(cadeia)}'")
+    if expressao.grupos:
+        tabela = Table(title="Grupos extraídos")
+        tabela.add_column("Índice")
+        tabela.add_column("Descrição")
+        tabela.add_column("Valor")
+        for indice, descricao in sorted(expressao.grupos.items()):
+            tabela.add_row(str(indice), escape(descricao), escape(correspondencia.group(indice) or ""))
+        console.print(tabela)
