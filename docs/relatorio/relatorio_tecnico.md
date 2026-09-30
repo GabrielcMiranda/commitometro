@@ -640,6 +640,22 @@ A suíte (`pytest`, 243 casos no total) combina quatro camadas:
 
 ### 7.2 Simulação passo a passo (ε-fecho) — ER-03
 
+Rastro completo, estado por estado, do AFNε da ER-03 simulando `1.0.0` (aceita) e `01.0.0`
+(rejeitada por zero à esquerda) — o mesmo que se obtém no JFLAP em *Input → Step with
+Closure* — em [`docs/afne/simulacoes/ER-03_passo_a_passo.md`](../afne/simulacoes/ER-03_passo_a_passo.md).
+Resumo: a cadeia `1.0.0` termina no ε-fecho `{q46, q48, q49, q91, q95}`, que intersecta o
+conjunto de finais em `q49` → aceita; a cadeia `01.0.0` já esvazia o conjunto de estados após
+ler o segundo símbolo (`0` seguido de `1`), porque o ramo literal `0` de N não tem transição
+de saída para outro dígito — só o ramo `P D*` permite continuar após o primeiro dígito, e ele
+exige que esse primeiro dígito seja não nulo. É exatamente a regra "número sem zero à
+esquerda" (N = `0 | P D*`) se manifestando na simulação, não uma verificação ad hoc de
+string.
+
+Capturas de tela equivalentes do JFLAP (`docs/afne/simulacoes/ER-03_aceita_passo_*.png` e
+`ER-03_rejeitada_passo_*.png`) e a execução em lote das seis ERs (*Input → Multiple Run*,
+`docs/afne/simulacoes/ER-0X_multiple_run.png`) são a evidência visual complementar a essa
+tabela — pendentes de captura na sessão de JFLAP da equipe (issue #27).
+
 ### 7.3 Resumo por ER
 
 | ER | Casos | Aceitas | Rejeitadas | Casos-limite | Resultado |
