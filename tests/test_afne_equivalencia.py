@@ -1,4 +1,5 @@
 import json
+import random
 from pathlib import Path
 
 import pytest
@@ -37,3 +38,26 @@ def test_afne_er_e_casos_oficiais_concordam(id_er: str) -> None:
         assert afne.aceita(cadeia) is esperado, f"{id_er}: AFNε diverge do caso oficial em {cadeia!r}"
         obtido_er = padrao.fullmatch(cadeia) is not None
         assert obtido_er is esperado, f"{id_er}: ER diverge do caso oficial em {cadeia!r}"
+
+
+ALFABETOS = {
+    "ER-01": "abcdefghijklmnopqrstuvwxyz0123456789()!: -",
+    "ER-02": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -:#",
+    "ER-03": "v0123456789.-abcehlprt",
+    "ER-04": "abcdefghilmnoprstuvx0123456789/-.",
+    "ER-05": "CcFfRrlosedxidvfab0123456789-./#: ,",
+    "ER-06": "Co-Authredby:AnSuz0123456789.@<>_+ ",
+}
+
+
+@pytest.mark.parametrize("id_er", IDS)
+def test_afne_e_er_concordam_em_cadeias_aleatorias(id_er: str) -> None:
+    afne = _carregar_afne(id_er)
+    padrao = REGISTRO[id_er].compilada
+    alfabeto = ALFABETOS[id_er]
+    gerador = random.Random(42)
+    for _ in range(2000):
+        tamanho = gerador.randint(0, 22)
+        cadeia = "".join(gerador.choice(alfabeto) for _ in range(tamanho))
+        esperado = padrao.fullmatch(cadeia) is not None
+        assert afne.aceita(cadeia) == esperado, f"{id_er}: divergiu em cadeia aleatória {cadeia!r}"
