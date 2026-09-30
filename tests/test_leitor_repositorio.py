@@ -56,3 +56,19 @@ def test_repositorio_sem_commits_leva_a_erro_amigavel(tmp_path) -> None:
     git.Repo.init(pasta)
     with pytest.raises(EntradaInvalidaError, match="não tem nenhum commit"):
         ler_commits(pasta)
+
+
+def test_ler_tags_em_pasta_sem_repositorio_leva_a_erro_amigavel(tmp_path) -> None:
+    pasta = tmp_path / "so_uma_pasta"
+    pasta.mkdir()
+    with pytest.raises(EntradaInvalidaError, match="não é um repositório Git"):
+        ler_tags(pasta)
+
+
+def test_le_branches_remotas_sem_prefixo_e_sem_duplicar(tmp_path, repo_git) -> None:
+    caminho_clone = tmp_path / "clone"
+    clone = repo_git.clone(str(caminho_clone))
+    remotas = ler_branches(clone.working_tree_dir)
+    assert "main" in remotas
+    assert "origin/main" not in remotas
+    assert remotas.count("main") == 1
