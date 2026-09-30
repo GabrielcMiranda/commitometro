@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
+
+import typer
+from rich.console import Console
+
+from commitometro.auditoria import auditar as executar_auditoria
+from commitometro.erros import EntradaInvalidaError
+from commitometro.relatorio import para_json, para_markdown, renderizar_tabela
+
+app = typer.Typer(help="Auditor de convenções de commits e versionamento em repositórios Git.")
+
+_FORMATOS = ("tabela", "json", "markdown")
+
+
+def _validar_formato(formato: str) -> None:
+    if formato not in _FORMATOS:
+        raise EntradaInvalidaError(
+            f"Formato '{formato}' desconhecido; use um de: {', '.join(_FORMATOS)}."
+        )
+
+
+def _escrever_saida(texto: str, saida: Optional[Path]) -> None:
+    if saida is None:
+        print(texto)
+    else:
+        saida.write_text(texto, encoding="utf-8")
+
+
+@app.command()
+def auditar(
+    caminho: Optional[str] = typer.Argument(None, help="Caminho do repositório Git."),
+    arquivo: Optional[Path] = typer.Option(None, "--arquivo", help="Histórico exportado."),
+    tags: Optional[Path] = typer.Option(None, "--tags", help="Arquivo de tags exportado."),
+    branches: Optional[Path] = typer.Option(None, "--branches", help="Arquivo de branches exportado."),
+    formato: str = typer.Option("tabela", "--formato", help="tabela, json ou markdown."),
+    saida: Optional[Path] = typer.Option(None, "--saida", help="Arquivo onde salvar a saída."),
+    incluir_merges: bool = typer.Option(False, "--incluir-merges"),
+    falhar_se_invalido: bool = typer.Option(False, "--falhar-se-invalido"),
+) -> None:
+    _validar_formato(formato)
+    relatorio = executar_auditoria(
+        caminho,
+        historico=arquivo,
+        arquivo_tags=tags,
+        arquivo_branches=branches,
+        incluir_merges=incluir_merges,
+    )
+    if formato == "tabela":
+        renderizar_tabela(Console(), relatorio)
+    elif formato == "json":
+        _escrever_saida(para_json(relatorio), saida)
+    else:
+        _escrever_saida(para_markdown(relatorio), saida)
+
+    if falhar_se_invalido:
+        total_invalidos = sum(len(autor.invalidos) for autor in relatorio.por_autor)
+        if total_invalidos:
+            raise typer.Exit(code=1)
