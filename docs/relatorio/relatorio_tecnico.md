@@ -627,7 +627,7 @@ blocos, além do diagrama completo (apêndice), para não sobrecarregar a leitur
 > (*View → Apply a Special Layout* → *File → Save Image As…*) a partir dos `.jff`
 > versionados. Essa exportação é a única etapa manual de GUI que resta neste plano — os
 > `.jff`, as legendas e as tabelas já estão gerados e verificados (seção 7.1); assim que os
-> PNGs forem exportados pela equipe, eles renderizam nos mesmos caminhos, sem editar este
+> PNGs forem exportados, eles renderizam nos mesmos caminhos, sem editar este
 > arquivo.
 
 ## 7. Testes e análise dos resultados
@@ -670,7 +670,7 @@ string.
 Capturas de tela equivalentes do JFLAP (`docs/afne/simulacoes/ER-03_aceita_passo_*.png` e
 `ER-03_rejeitada_passo_*.png`) e a execução em lote das seis ERs (*Input → Multiple Run*,
 `docs/afne/simulacoes/ER-0X_multiple_run.png`) são a evidência visual complementar a essa
-tabela — pendentes de captura na sessão de JFLAP da equipe (issue #27).
+tabela — pendentes de captura numa sessão de JFLAP (issue #27).
 
 ### 7.3 Resumo por ER
 
@@ -782,19 +782,18 @@ calculada para o estado do repositório no momento da auditoria foi `v0.3.0 → 
 
 ## 10. Contribuições
 
-## 10. Contribuições
-
-Cada integrante ficou responsável por duas etapas completas em cada um dos dois planos de
-trabalho (implementação; AFNε, relatório e apresentação), de módulo/documento inteiro a
-módulo/documento inteiro, para que a contribuição de cada um seja auditável commit a commit
-pelo próprio Commitômetro — o mesmo critério que a ferramenta aplica ao repositório é
-aplicado à divisão do trabalho que a produziu.
+No Plano 1 (implementação), cada integrante ficou responsável por duas etapas completas, de
+módulo inteiro a módulo inteiro, para que a contribuição de cada um fosse auditável commit a
+commit pelo próprio Commitômetro. Já a construção do Plano 2 (convenção e os 6 AFNε,
+validação cruzada, este relatório, a apresentação e o registro de contribuições) ficou sob
+responsabilidade única de Gabriel Miranda; Yago e João Pedro seguem responsáveis pela defesa
+oral das próprias ERs na apresentação.
 
 | Integrante | Plano de implementação | Plano de AFNε/relatório/apresentação | ER defendida na apresentação |
 |---|---|---|---|
-| Gabriel Miranda (A) | Etapas 1–2 — esqueleto do pacote e as 6 ERs | Etapas 3–4 — validação cruzada AFNε×ER e relatório técnico | ER-01, ER-02 |
-| Yago Schnorr (B) | Etapas 3–4 — leitura de repositório e regras de negócio | Etapas 5–6 — apresentação e contribuições/entrega | ER-03, ER-04 |
-| João Pedro Silva — JPSSmaths (C) | Etapas 5–6 — CLI/interface web e documentação final | Etapas 1–2 — convenção e construção dos 6 AFNε | ER-05, ER-06 |
+| Gabriel Miranda (A) | Etapas 1–2 — esqueleto do pacote e as 6 ERs | Etapas 1–6 (todas) | ER-01, ER-02 |
+| Yago Schnorr (B) | Etapas 3–4 — leitura de repositório e regras de negócio | — | ER-03, ER-04 |
+| João Pedro Silva — JPSSmaths (C) | Etapas 5–6 — CLI/interface web e documentação final | — | ER-05, ER-06 |
 
 Resumo detalhado, com a lista de branches/PRs por pessoa, em
 [`CONTRIBUICOES.md`](../../CONTRIBUICOES.md).
