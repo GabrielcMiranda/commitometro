@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from commitometro.padroes import REGISTRO
@@ -9,6 +11,18 @@ st.title("Testador de Expressões Regulares")
 
 chave = st.selectbox("Expressão regular", sorted(REGISTRO))
 expressao = REGISTRO[chave]
+
+st.subheader(f"{expressao.id} — {expressao.nome}")
+st.write(f"**Finalidade:** {expressao.finalidade}")
+st.write(f"**Alfabeto:** {expressao.alfabeto}")
+st.write(f"**ER formal:** {expressao.formal}")
+st.code(expressao.padrao, language="text")
+
+caminho_afne = Path("docs/afne") / f"{expressao.id}.png"
+if caminho_afne.exists():
+    st.image(str(caminho_afne), caption=f"AFNε de {expressao.id}")
+else:
+    st.info(f"AFNε de {expressao.id} ainda não disponível em {caminho_afne}.")
 
 cadeias_texto = st.text_area("Cadeias para testar (uma por linha)")
 
