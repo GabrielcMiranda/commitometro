@@ -154,6 +154,13 @@ A documentação em [docs/EXPRESSOES.md](docs/EXPRESSOES.md) é gerada automatic
 partir do código (`python scripts/gerar_docs_ers.py`), então o padrão documentado é sempre
 byte a byte o mesmo do código-fonte.
 
+## Declaração de uso de IA
+
+A equipe usou o Claude (Anthropic) como apoio em partes pontuais do trabalho: implementação
+e testes das seis ERs, geração dos diagramas dos AFNε, montagem dos slides da apresentação e
+automação na criação de issues no GitHub. Todo o conteúdo produzido foi revisado e é
+compreendido e defendido pela equipe.
+
 ## Créditos e referências
 
 - [GitPython](https://gitpython.readthedocs.io/) e [PyDriller](https://pydriller.readthedocs.io/) — leitura do histórico Git
