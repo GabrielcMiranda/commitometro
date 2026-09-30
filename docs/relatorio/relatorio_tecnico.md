@@ -153,6 +153,99 @@ teste automatizado de equivalência.
 
 ## 4. Arquitetura e implementação
 
+### 4.1 Stack e justificativa
+
+| Camada | Ferramenta | Por quê |
+|---|---|---|
+| Linguagem | Python 3.12+ | módulo `re` nativo, tipagem gradual, ecossistema de testes maduro |
+| Leitura de repositório | GitPython, PyDriller | GitPython dá acesso direto a commits/branches/tags de um repositório local; PyDriller complementa a mineração de histórico quando é preciso percorrer commits com metadados já estruturados, sem reimplementar o parsing do `git log` |
+| CLI | Typer | comandos tipados por assinatura de função, `--help` gerado automaticamente, validação de argumentos sem código extra |
+| Saída no terminal | Rich | tabelas, cores e painéis legíveis para o relatório de auditoria no terminal |
+| Interface web | Streamlit | páginas interativas (upload de arquivo, tabela, gráfico) sem escrever HTML/JS, adequado ao prazo da disciplina |
+| Testes | pytest + pytest-cov | parametrização (`@pytest.mark.parametrize`) para rodar os mesmos casos de `tests/casos/*.json` contra ER, AFNε e CLI sem repetir código |
+
+### 4.2 Diagrama de módulos
+
+O pacote é organizado em quatro camadas, cada uma dependendo apenas das anteriores:
+
+```
+entrada (leitores/)              →  arquivo.py (log exportado) · repositorio.py (GitPython)
+        ↓
+modelos (modelos.py)             →  Commit, Branch, Tag (dataclasses imutáveis)
+        ↓
+processamento
+  padroes/  (as 6 ERs, REGISTRO) →  commits.py · versionamento.py · referencias.py
+  analise.py                     →  diagnóstico de uma mensagem de commit (usa padroes/)
+  conformidade.py                →  agrega diagnósticos por autor
+  versionamento.py (raiz)        →  ordena tags e sugere a próxima versão (usa padroes/versionamento.py)
+  auditoria.py                   →  orquestra leitura → análise → conformidade → sugestão
+        ↓
+saída
+  relatorio.py                   →  formata o resultado da auditoria (texto Rich, JSON, Markdown)
+  cli.py                         →  comandos Typer (`auditar`, `validar`, `versao`, `ers`)
+  app/Auditoria.py + app/pages/  →  interface Streamlit (auditoria + testador de ERs)
+```
+
+Um diagrama gráfico equivalente (`docs/relatorio/arquitetura.png`) é exportado à parte,
+como imagem, para a versão em PDF — a fonte da verdade da divisão em camadas é o bloco
+acima, versionado como texto.
+
+### 4.3 Fluxo entrada → processamento → saída
+
+1. **Entrada:** `leitores/repositorio.py` abre um repositório local com GitPython e extrai
+   commits (sem merges, por padrão), branches e tags; `leitores/arquivo.py` lê o mesmo
+   conjunto de um log exportado no formato descrito no `README.md` (campos separados por
+   `%x1f`, commits por `%x1e`), para auditar um repositório sem acesso direto a ele.
+2. **Processamento:** `auditoria.py` orquestra a chamada de `analise.py` (que aplica as
+   ERs de `padroes/` a cada commit e monta um diagnóstico — tipo, escopo, quebra de
+   compatibilidade, issues referenciadas, coautores, ou o motivo da rejeição),
+   `conformidade.py` (agrega os diagnósticos por autor) e `versionamento.py` (ordena as tags
+   existentes pela ER-03 e sugere a próxima versão a partir dos tipos de commit desde a
+   última tag).
+3. **Saída:** `relatorio.py` formata o resultado da auditoria em três formatos — texto Rich
+   colorido para o terminal, JSON para consumo por outra ferramenta, Markdown para anexar a
+   um PR ou a este próprio relatório; `cli.py` expõe isso via Typer; `app/` expõe o mesmo
+   resultado em duas páginas Streamlit.
+
+### 4.4 Formato do log exportado
+
+Ver `README.md`, seção "Exportando o histórico de um repositório": cada commit vira um
+registro com 5 campos (hash, autor, e-mail, data ISO 8601, mensagem completa) separados por
+`%x1f` (separador de unidade), e os registros são separados por `%x1e` (separador de
+registro) — escolha que evita qualquer ambiguidade com mensagens de commit multilinha ou que
+contenham `\n`, vírgula ou ponto e vírgula.
+
+### 4.5 CLI, interface web e tratamento de entradas inválidas
+
+A CLI (Typer) expõe quatro comandos: `auditar` (repositório local ou arquivos exportados,
+com saída em texto/JSON/Markdown e `--falhar-se-invalido` para uso em CI), `validar`
+(testa uma cadeia contra uma ER específica pelo id), `versao` (só a sugestão de próxima
+versão) e `ers` (lista as 6 ERs registradas, com a ER formal e a forma implementada em
+código). A interface web (Streamlit) tem a página de auditoria (upload ou caminho local,
+métricas, tabela por autor, gráfico e download do relatório) e a página **Testador de ERs**,
+usada para testar uma entrada nova durante a apresentação sem precisar de um repositório.
+
+Toda entrada inválida — caminho inexistente, arquivo vazio, id de ER desconhecido,
+repositório sem nenhum commit — é tratada por `erros.py` e sai com uma mensagem clara e
+código de saída 2, sem *traceback* exposto ao usuário.
+
+### 4.6 Decisões de implementação
+
+- **`re.fullmatch`, nunca `re.match` ou `re.search`:** cada ER deve validar a cadeia inteira
+  (cabeçalho inteiro, tag inteira, nome de branch inteiro), não apenas um prefixo — usar
+  `match`/`search` aceitaria sufixos inválidos que `fullmatch` rejeita corretamente (ver, por
+  exemplo, o caso-limite `Closes #3,#4` da ER-05, rejeitado porque a vírgula sem espaço não
+  fecha a alternativa repetida `( ,␣ I )*` para a cadeia inteira).
+- **Sem `\d`, `\w`, `\s`:** todas as classes são escritas por extenso (`[0-9]`, `[a-z0-9]`,
+  `[^ \n]`) para que a correspondência com a ER formal do guia (que define classes por
+  extensão de conjunto, não por atalho Perl) seja direta e auditável — é o que a coluna
+  "Equivalência (atalho → operador formal)" de cada ficha (seção 5) documenta.
+- **Sem *flags* (`re.IGNORECASE`, `re.MULTILINE`, etc.):** manter o comportamento default do
+  `re` (sensível a maiúsculas/minúsculas, `.` não casa `\n`) evita que uma *flag* introduza
+  uma diferença de linguagem não visível na ER escrita — por exemplo, `re.IGNORECASE`
+  tornaria a ER-01 equivalente a uma linguagem maior do que a ER formal documentada, que usa
+  `T` como união de literais exatamente minúsculos.
+
 ## 5. Expressões regulares
 
 ## 6. Autômatos finitos com movimentos vazios (AFNε)
