@@ -248,6 +248,290 @@ código de saída 2, sem *traceback* exposto ao usuário.
 
 ## 5. Expressões regulares
 
+Cada ficha segue o formato do guia da disciplina (Identificação · Alfabeto · Linguagem · ER
+formal · Sintaxe implementada · Equivalência atalho→operador · AFNε · Testes · Resultado e
+limite). O conteúdo é copiado de `docs/ers/ER-0X.md` e de `docs/EXPRESSOES.md` (gerado por
+`scripts/gerar_docs_ers.py` a partir do `REGISTRO` do código, nunca redigitado à mão), para
+que o padrão citado aqui nunca divirja do padrão realmente executado pelos testes.
+
+### 5.1 ER-01 — Cabeçalho de commit (Conventional Commits)
+
+**Identificação.** Valida a 1ª linha do commit no formato `tipo(escopo)!: descrição` e
+extrai tipo, escopo e marca de quebra de compatibilidade. Implementada em
+[`src/commitometro/padroes/commits.py`](../../src/commitometro/padroes/commits.py), função
+`validar_cabecalho`.
+
+**Alfabeto (Σ).** Σ = caracteres Unicode aceitos por `str`; T =
+`feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert`;
+A = {a,…,z} ∪ {0,…,9}; C = Σ − {\n}; C₀ = C − {␣}.
+
+**Linguagem L.** Um tipo de T, opcionalmente um escopo entre parênteses formado por palavras
+de A separadas por hífen simples, opcionalmente `!`, depois `:` e um espaço, e uma descrição
+não vazia que não começa com espaço.
+
+**ER formal:** `T ( '(' A A* ( - A A* )* ')' | ε ) ( ! | ε ) :␣ C₀ C*`
+
+**Sintaxe implementada:**
+```python
+r"(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(([a-z0-9]+(-[a-z0-9]+)*)\))?(!?): ([^ \n][^\n]*)"
+```
+Grupos: 1 = tipo · 3 = escopo · 5 = marca de quebra (`!` ou vazio) · 6 = descrição.
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `(feat\|fix\|...)` | união T |
+| `(\|`, `)` (agrupamento) | `( )` |
+| `?` em `(\(...\))?` e `(!?)` | `( r \| ε )` |
+| `+` implícito em `[a-z0-9]+` | `A A*` |
+| `*` em `(-[a-z0-9]+)*` | `( - A A* )*` |
+| `[a-z0-9]` | classe finita, abreviação de A |
+| `[^ \n]` | classe negada, abreviação de C₀ |
+| `[^\n]` | classe negada, abreviação de C |
+| ` ` literal após `:` | `␣` |
+
+**AFNε:** ver seção 6.1 e [`docs/afne/ER-01.md`](../afne/ER-01.md).
+
+**Testes:** [`tests/casos/er01_cabecalho.json`](../../tests/casos/er01_cabecalho.json), 19
+casos (8 aceitos, 11 rejeitados, 4 deles casos-limite), todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 100% de cobertura de `validar_cabecalho`. A ER não limita o
+cabeçalho a 72 caracteres, como recomenda a convenção — fora do escopo de uma ER sobre uma
+única linha sem contagem de posição, e não exigido pelo enunciado do trabalho.
+
+### 5.2 ER-02 — Linha de rodapé (trailer)
+
+**Identificação.** Reconhece linhas de rodapé do Conventional Commits/git trailers e
+detecta `BREAKING CHANGE`. Implementada em
+[`src/commitometro/padroes/commits.py`](../../src/commitometro/padroes/commits.py), função
+`validar_rodape`.
+
+**Alfabeto (Σ).** L = {A,…,Z} ∪ {a,…,z}; W = `L L*`; C e C₀ como na ER-01.
+
+**Linguagem L.** Um token (`BREAKING CHANGE` ou palavras de letras unidas por hífen simples),
+seguido do separador `: ` ou ` #`, e de um valor não vazio que não começa com espaço.
+
+**ER formal:** `( BREAKING␣CHANGE | W ( - W )* ) ( :␣ | ␣# ) C₀ C*`
+
+**Sintaxe implementada:**
+```python
+r"(BREAKING CHANGE|[A-Za-z]+(-[A-Za-z]+)*)(: | #)([^ \n][^\n]*)"
+```
+Grupos: 1 = token · 3 = separador · 4 = valor. Há quebra de compatibilidade se o token for
+`BREAKING CHANGE` ou `BREAKING-CHANGE`.
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `BREAKING CHANGE\|[A-Za-z]+(-[A-Za-z]+)*` | união entre o literal e `W ( - W )*` |
+| `[A-Za-z]` | classe finita, abreviação de L |
+| `+` em `[A-Za-z]+` | `L L*` |
+| `(: \| #)` | união `( :␣ \| ␣# )` |
+| `[^ \n]`, `[^\n]` | classes negadas C₀ e C |
+
+**AFNε:** ver seção 6.2 e [`docs/afne/ER-02.md`](../afne/ER-02.md).
+
+**Testes:** [`tests/casos/er02_rodape.json`](../../tests/casos/er02_rodape.json), 17 casos,
+todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 99% de cobertura de `commits.py` (falta só a linha do fallback
+defensivo de `diagnosticar_cabecalho`, em `analise.py`, não desta ER). A ER aceita qualquer
+token formado só por letras como se fosse um trailer válido, sem validar contra uma lista
+fechada de nomes reconhecidos (`Reviewed-by`, `Signed-off-by`, …) — um token inventado do
+tipo `Xyz-by: valor` também é aceito.
+
+### 5.3 ER-03 — Tag de versão semântica
+
+**Identificação.** Reconhece tags SemVer, com ou sem prefixo `v` e com pré-lançamento
+opcional, para ordenar versões e sugerir a próxima. Implementada em
+[`src/commitometro/padroes/versionamento.py`](../../src/commitometro/padroes/versionamento.py),
+função `validar_versao`.
+
+**Alfabeto (Σ).** D = {0,…,9}; P = D − {0}; N = `0 | P D*` (número sem zero à esquerda).
+
+**Linguagem L.** Um prefixo `v` opcional, três números N separados por pontos, e um sufixo
+de pré-lançamento opcional (`alpha`, `beta` ou `rc`, com um número N opcional).
+
+**ER formal:** `( v | ε ) N '.' N '.' N ( - ( alpha | beta | rc ) ( '.' N | ε ) | ε )`
+
+**Sintaxe implementada:**
+```python
+r"v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)(\.(0|[1-9][0-9]*))?)?"
+```
+Grupos: 1/2/3 = maior/menor/correção · 5 = rótulo de pré-lançamento · 7 = número do
+pré-lançamento.
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `v?` | `( v \| ε )` |
+| `0\|[1-9][0-9]*` | `N` (`0 \| P D*`) |
+| `\.` | `'.'` literal |
+| `(alpha\|beta\|rc)` | união |
+| `(...)?` (duas ocorrências) | `( r \| ε )` |
+
+**AFNε:** ver seção 6.3 e [`docs/afne/ER-03.md`](../afne/ER-03.md) — a única ER cujo AFNε
+usa dois arcos literais (`0` e `P`) em vez de uma classe genérica para os dígitos, para que a
+tradução cadeia real → cadeia representativa seja um homomorfismo exato durante a
+demonstração ao vivo (seção 6, regra 7). É também a ER usada na simulação passo a passo de
+ε-fecho da seção 7.2.
+
+**Testes:** [`tests/casos/er03_versao.json`](../../tests/casos/er03_versao.json), 18 casos,
+todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 100% de cobertura. A dataclass `Versao` implementa comparação
+(`<`, `<=`, `>`, `>=`) para ordenar tags corretamente, inclusive numericamente
+(`v1.10.0 > v1.9.0`) e priorizando estável sobre pré-lançamento (`v1.0.0 > v1.0.0-rc.1`).
+Nenhum falso positivo/negativo conhecido: a ER segue rigorosamente a especificação SemVer
+2.0.0 usada pelo projeto.
+
+### 5.4 ER-04 — Nome de branch
+
+**Identificação.** Verifica se as branches seguem o fluxo `main`/`develop` mais prefixos
+convencionais. Implementada em
+[`src/commitometro/padroes/versionamento.py`](../../src/commitometro/padroes/versionamento.py),
+função `validar_branch`.
+
+**Alfabeto (Σ).** A = {a,…,z} ∪ {0,…,9}; S = `A A* ( - A A* )*`; N como na ER-03.
+
+**Linguagem L.** `main`, `develop`, ou um dos prefixos `feature`/`bugfix`/`hotfix`/`docs`
+seguido de `/` e um sufixo S, ou `release` seguido de `/` e uma versão `N.N.N`.
+
+**ER formal:** `main | develop | ( feature | bugfix | hotfix | docs ) / S | release / N '.' N '.' N`
+
+**Sintaxe implementada:**
+```python
+r"main|develop|(feature|bugfix|hotfix|docs)/[a-z0-9]+(-[a-z0-9]+)*|release/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
+```
+Com `fullmatch`, a união no nível mais externo exige que a cadeia inteira case com uma das
+quatro alternativas. Grupos: 1 = prefixo · 3/4/5 = maior/menor/correção de `release`.
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `\|` (três ocorrências) | união entre as quatro alternativas |
+| `[a-z0-9]` | classe finita, abreviação de A |
+| `+` em `[a-z0-9]+` | `A A*` |
+| `*` em `(-[a-z0-9]+)*` | `( - A A* )*` |
+| `/` literal | `/` |
+
+**AFNε:** ver seção 6.4 e [`docs/afne/ER-04.md`](../afne/ER-04.md) — reaproveita o mesmo
+sub-AFNε de N usado na ER-03.
+
+**Testes:** [`tests/casos/er04_branch.json`](../../tests/casos/er04_branch.json), 18 casos,
+todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 100% de cobertura de `validar_branch`. A ER não valida
+convenções adicionais de nomenclatura (por exemplo, exigir um número de issue no sufixo de
+`feature/`); qualquer sufixo alfanumérico com hífens é aceito.
+
+### 5.5 ER-05 — Referência a issue
+
+**Identificação.** Encontra linhas que fecham ou referenciam issues (palavras-chave de
+fechamento do GitHub), inclusive de outro repositório. Implementada em
+[`src/commitometro/padroes/referencias.py`](../../src/commitometro/padroes/referencias.py),
+função `validar_referencia`.
+
+**Alfabeto (Σ).** K = `(C|c)lose(s|d|ε) | (F|f)ix(es|ed|ε) | (R|r)esolve(s|d|ε) | (R|r)efs`;
+O = {a,…,z} ∪ {0,…,9} ∪ {-}; R = O ∪ {., _}; D, P como na ER-03;
+I = `( O O* / R R* | ε ) # P D*`.
+
+**Linguagem L.** Uma palavra-chave de fechamento ou referência, um separador opcional (`:`),
+e uma lista de uma ou mais issues separadas por vírgula e espaço.
+
+**ER formal:** `K ( : | ε ) ␣ I ( ,␣ I )*`
+
+**Sintaxe implementada:**
+```python
+r"([Cc]lose[sd]?|[Ff]ix(es|ed)?|[Rr]esolve[sd]?|[Rr]efs):? ([a-z0-9-]+/[a-z0-9._-]+)?#[1-9][0-9]*(, ([a-z0-9-]+/[a-z0-9._-]+)?#[1-9][0-9]*)*"
+```
+Grupo 1 = palavra-chave. A lista completa de issues é extraída depois do `fullmatch`,
+dividindo o trecho após a palavra-chave por `", "` — o grupo repetido do regex só guardaria a
+última ocorrência.
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `[Cc]lose[sd]?` etc. | abreviação de `(C\|c)lose(s\|d\|ε)` e famílias análogas |
+| `:?` | `( : \| ε )` |
+| `[a-z0-9-]+` | `O O*` |
+| `[a-z0-9._-]+` | `R R*` |
+| `(...)?` no dono/repo | `( ... \| ε )` |
+| `[1-9][0-9]*` | `P D*` |
+| `(, ...)*` | `( ,␣ I )*` |
+
+**AFNε:** ver seção 6.5 e [`docs/afne/ER-05.md`](../afne/ER-05.md).
+
+**Testes:** [`tests/casos/er05_referencia.json`](../../tests/casos/er05_referencia.json), 18
+casos, todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 100% de cobertura. A ER exige que o dono/repositório de uma
+referência cruzada esteja em minúsculas (`[a-z0-9-]`), então `Org/Repo#3` é rejeitado mesmo
+sendo um link válido no GitHub — o GitHub normaliza nomes de repositório sem diferenciar
+maiúsculas de minúsculas, mas a ER não replica essa normalização.
+
+### 5.6 ER-06 — Linha de coautoria
+
+**Identificação.** Reconhece `Co-authored-by` e extrai nome e e-mail do coautor — inclusive
+de assistentes de IA, prática comum no mercado atual (Claude Code, GitHub Copilot).
+Implementada em
+[`src/commitometro/padroes/referencias.py`](../../src/commitometro/padroes/referencias.py),
+função `validar_coautoria`.
+
+**Alfabeto (Σ).** L = {A,…,Z} ∪ {a,…,z} ∪ {À,…,Ö} ∪ {Ø,…,ö} ∪ {ø,…,ÿ} (letras latinas, sem ×
+e ÷); D = {0,…,9}; M = L ∪ D; T = `M M* ( '.' M M* | ε )` (token de nome, com sufixo numérico
+opcional de versão); U = {A,…,Z,a,…,z,0,…,9} ∪ {., _, +, -}; H = {A,…,Z,a,…,z,0,…,9} ∪ {-};
+Z = {A,…,Z} ∪ {a,…,z}.
+
+**Linguagem L.** `Co-authored-by:` seguido de um ou mais tokens de nome T separados por um
+único espaço, e de um e-mail entre `<` e `>`.
+
+**ER formal:** `Co-(A|a)uthored-(B|b)y:␣ T (␣ T)* ␣< U U* @ H H* ( '.' H H* )* '.' Z Z* >`
+
+**Sintaxe implementada:**
+```python
+r"Co-[Aa]uthored-[Bb]y: ([A-Za-zÀ-ÖØ-öø-ÿ0-9]+(\.[A-Za-zÀ-ÖØ-öø-ÿ0-9]+)?( [A-Za-zÀ-ÖØ-öø-ÿ0-9]+(\.[A-Za-zÀ-ÖØ-öø-ÿ0-9]+)?)*) <([A-Za-z0-9._+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]+)>"
+```
+Grupos: 1 = nome completo · 5 = e-mail (normalizado para minúsculas por `validar_coautoria`
+antes de agrupar).
+
+**Equivalência (atalho → operador formal):**
+
+| Atalho no código | Operador formal |
+|---|---|
+| `[Aa]`, `[Bb]` | classes finitas, `(A\|a)`, `(B\|b)` |
+| `[A-Za-zÀ-ÖØ-öø-ÿ0-9]` | classe finita, abreviação de M |
+| `(\....)?` | sufixo opcional `( '.' M M* \| ε )` |
+| `( ...)*` | `(␣ T)*` |
+| `[A-Za-z0-9._+-]` | classe finita, abreviação de U |
+| `[A-Za-z0-9-]` | classe finita, abreviação de H |
+| `(\.[A-Za-z0-9-]+)*` | `( '.' H H* )*` |
+| `[A-Za-z]` | classe finita, abreviação de Z |
+
+**Nota de projeto — ampliação para coautoria de IA.** Esta ER foi ampliada de propósito em
+relação à sugestão original da lauda (que só previa nomes humanos) para não rejeitar linhas
+de coautoria que assistentes de IA adicionam nos commits — um caso real observado no próprio
+histórico deste repositório, não hipotético. A mudança foi adicionar o sufixo `.` +
+dígitos/letras a cada palavra do nome (a definição de T acima), cobrindo nomes de modelo como
+`Claude Opus 5.5` sem abrir mão da estrutura de "palavras separadas por um único espaço" que
+já protegia contra nomes malformados.
+
+**AFNε:** ver seção 6.6 e [`docs/afne/ER-06.md`](../afne/ER-06.md) — o bloco do nome (T) tem
+um ramo a mais em relação a um nome só de letras, por causa desse sufixo numérico opcional.
+
+**Testes:** [`tests/casos/er06_coautoria.json`](../../tests/casos/er06_coautoria.json), 21
+casos, todos corretos — ver seção 7.1.
+
+**Resultado e limitações.** 100% de cobertura. A ER rejeita contas de bot com colchetes no
+nome, como `dependabot[bot]`, porque `[` e `]` não pertencem ao alfabeto do nome (L ∪ D) —
+incluí-los abriria brecha para nomes com colchetes arbitrários, então a equipe optou por
+manter essa restrição e documentá-la em vez de ampliar de novo o alfabeto (seção 9).
+
 ## 6. Autômatos finitos com movimentos vazios (AFNε)
 
 ## 7. Testes e análise dos resultados
