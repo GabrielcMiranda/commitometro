@@ -53,3 +53,42 @@ Totais: A ≈ 3:50 · B ≈ 3:25 · C ≈ 3:45.
 - **15 — Contribuições:** tabela de quem fez o quê (seção 10 do relatório /
   `CONTRIBUICOES.md`).
 
+## Roteiro da demonstração ao vivo (slide 13)
+
+```powershell
+commitometro validar er01 "feat(login): adiciona recuperação de senha"               # aceita + grupos
+commitometro validar er01 "Feat: adiciona login"                                     # rejeitada + diagnóstico
+commitometro validar er06 "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"  # coautoria de IA aceita
+commitometro auditar dados\repo_demo                                                  # relatório por autor + versão
+commitometro auditar .                                                                # o próprio repo: 100%
+commitometro auditar --arquivo vazio.log                                              # mensagem de entrada inválida
+```
+
+Depois, no Streamlit: a página de auditoria com o gráfico por autor, e o Testador de ERs com
+uma cadeia ditada pelo professor na hora.
+
+**Plano B para a demo:**
+- venv já ativado e `streamlit run app/Auditoria.py` já aberto **antes** de começar a falar;
+- `dados/repo_demo/` já gerado com antecedência (não gerar ao vivo);
+- GIF/vídeo curto da CLI e do Streamlit embutido no próprio PPTX, caso a rede ou o terminal
+  falhem durante a apresentação;
+- PDF dos slides em pen-drive, como cópia de segurança independente do notebook.
+
+## Perguntas prováveis (respostas curtas preparadas)
+
+| Pergunta | Quem responde primeiro |
+|---|---|
+| Por que `fullmatch` e não `search`/`^$`? | A |
+| O que é Σ na ER-01? `[^\n]` é um alfabeto finito? | A |
+| Por que não `\d`? | A |
+| Mostre o ε-fecho do estado inicial da ER-03. | B (com apoio de C) |
+| Uma classe `[a-z0-9]` num único arco ainda é um AFNε válido? | C |
+| Como vocês construíram o AFNε a partir da ER? (rascunhos de Thompson) | C |
+| Como vocês garantem que AFNε e ER reconhecem a mesma linguagem? | A |
+| Por que retrorreferências foram evitadas? | C |
+| Por que a ER-06 aceita dígitos no nome? | C |
+| Como a próxima versão é calculada? | B |
+| "Acrescente o tipo `wip` na ER-01" | A |
+| "Teste esta cadeia que eu vou ditar" | quem defende a ER |
+| Qual o caso-limite de cada ER? | quem defende a ER |
+
