@@ -76,6 +76,10 @@ commitometro ers --markdown
 Toda entrada inválida (caminho inexistente, arquivo vazio, ER desconhecida, repositório sem
 commits, etc.) mostra uma mensagem clara e sai com código 2, sem traceback.
 
+![Saída de commitometro auditar dados/repo_demo](docs/imagens/cli_auditar.png)
+
+![Saída de commitometro validar er03 "2.1.0-beta.3"](docs/imagens/cli_validar.png)
+
 ## Uso — interface web
 
 ```powershell
@@ -87,6 +91,10 @@ exportados, com métricas, tabela por autor, gráfico de conformidade e download
 relatório em JSON/Markdown). A página **Testador de ERs**, acessível pelo menu lateral,
 deixa testar qualquer uma das 6 ERs contra cadeias digitadas na hora — é a ferramenta
 usada quando o professor pede para testar uma entrada nova durante a apresentação.
+
+![Página de auditoria no Streamlit](docs/imagens/web_auditoria.png)
+
+![Página Testador de ERs no Streamlit](docs/imagens/web_testador.png)
 
 ## Testes
 
