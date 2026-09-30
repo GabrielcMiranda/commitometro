@@ -18,6 +18,46 @@ class AFNe:
         self.transicoes = transicoes
         self.legenda = legenda
 
+    def _satisfaz(self, rotulo: str, caractere: str) -> bool:
+        espaco = self.legenda.get("espaco")
+        if rotulo == espaco:
+            return caractere == " "
+        classes = self.legenda.get("classes", {})
+        if rotulo in classes:
+            predicado = classes[rotulo]
+            if "intervalos" in predicado:
+                return any(inicio <= caractere <= fim for inicio, fim in predicado["intervalos"])
+            if "conjunto" in predicado:
+                return caractere in predicado["conjunto"]
+            if "exceto" in predicado:
+                return caractere not in predicado["exceto"]
+            return False
+        return caractere == rotulo
+
+    def _fecho_epsilon(self, conjunto: set[int]) -> set[int]:
+        pilha = list(conjunto)
+        fechado = set(conjunto)
+        while pilha:
+            atual = pilha.pop()
+            for rotulo, destino in self.transicoes.get(atual, []):
+                if rotulo is None and destino not in fechado:
+                    fechado.add(destino)
+                    pilha.append(destino)
+        return fechado
+
+    def aceita(self, cadeia: str) -> bool:
+        atuais = self._fecho_epsilon({self.inicial})
+        for caractere in cadeia:
+            proximos: set[int] = set()
+            for estado in atuais:
+                for rotulo, destino in self.transicoes.get(estado, []):
+                    if rotulo is not None and self._satisfaz(rotulo, caractere):
+                        proximos.add(destino)
+            atuais = self._fecho_epsilon(proximos)
+            if not atuais:
+                return False
+        return bool(atuais & self.finais)
+
 
 def carregar(caminho_jff: str | Path, caminho_legenda: str | Path) -> AFNe:
     raiz = ElementTree.parse(caminho_jff).getroot()
