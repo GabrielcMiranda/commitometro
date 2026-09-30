@@ -690,7 +690,81 @@ expressão implementa exatamente a ER formal documentada.
 
 ## 8. Resultados da aplicação
 
+O Commitômetro foi executado sobre um repositório de demonstração
+([`resultados/auditoria_exemplo.md`](../../resultados/auditoria_exemplo.md)) e sobre o
+**próprio repositório do projeto**
+([`resultados/auditoria_do_proprio_repo.md`](../../resultados/auditoria_do_proprio_repo.md)),
+gerado por `commitometro auditar . --formato markdown`.
+
+### 8.1 Conformidade por autor (autoauditoria do próprio repositório)
+
+| Autor | Commits | Válidos | % conformidade | Coautorias recebidas |
+|---|---|---|---|---|
+| JPSSmaths | 34 | 34 | 100,0% | 0 |
+| yagoschnorr | 26 | 26 | 100,0% | 0 |
+| Gabriel Miranda | 25 | 25 | 100,0% | 0 |
+
+Os três integrantes fecham em 100% de conformidade no recorte auditado — resultado
+esperado, já que o próprio guia de commits do projeto (seção 0.3 do plano de implementação)
+segue rigorosamente o formato exigido pela ER-01/ER-02, e o CI roda `commitometro auditar .
+--falhar-se-invalido` a cada push, rejeitando qualquer commit fora do padrão antes de chegar
+à `main`.
+
+### 8.2 Branches e tags
+
+Todas as branches do fluxo (`main`, `docs/*`, `feature/*`, `release/1.0.0`) seguem a ER-04, e
+as tags publicadas (`v0.1.0`, `v0.3.0`, …) seguem a ER-03 — auditadas automaticamente na
+mesma execução.
+
+### 8.3 Sugestão de próxima versão
+
+Com base nos tipos de commit desde a última tag (regra SemVer da seção 3.4), a sugestão
+calculada para o estado do repositório no momento da auditoria foi `v0.3.0 → v0.4.0`
+(presença de commits `feat` sem `BREAKING CHANGE`, o que força incremento de `MINOR`, não de
+`MAJOR`).
+
+### 8.4 Capturas da CLI e da interface web
+
+![Saída de `commitometro auditar`](../imagens/cli_auditar.png)
+
+![Saída de `commitometro validar er03 "2.1.0-beta.3"`](../imagens/cli_validar.png)
+
+![Página de auditoria no Streamlit](../imagens/web_auditoria.png)
+
+![Página Testador de ERs no Streamlit](../imagens/web_testador.png)
+
 ## 9. Limitações e melhorias
+
+### 9.1 Limitações conhecidas (por ER)
+
+- **ER-01** não limita o cabeçalho a 72 caracteres, como recomenda a convenção — exigiria
+  contar posição/comprimento, fora do que uma ER sobre conteúdo (não posição) resolve
+  naturalmente.
+- **ER-02** aceita qualquer token formado só por letras como trailer válido, sem checá-lo
+  contra uma lista fechada de nomes reconhecidos.
+- **ER-05** exige dono/repositório em minúsculas; `Org/Repo#3` é rejeitado mesmo sendo um
+  link válido no GitHub (que normaliza sem diferenciar caixa).
+- **ER-06** rejeita nomes de bot com colchetes (`dependabot[bot]`), porque `[`/`]` não
+  pertencem ao alfabeto de nome — decisão deliberada para não abrir o alfabeto a colchetes
+  arbitrários (seção 5.6).
+
+### 9.2 Limitações gerais e melhorias futuras
+
+- **`.mailmap`:** o Commitômetro não deduplica autores que commitaram com nomes/e-mails
+  diferentes ao longo do projeto; um arquivo `.mailmap` do Git resolveria isso na leitura do
+  histórico, sem alterar nenhuma ER.
+- **Gancho `commit-msg`:** hoje a validação roda em CI, depois do push; um gancho local
+  (`commit-msg`) usando as mesmas seis ERs bloquearia o commit antes mesmo do push,
+  encurtando o ciclo de correção.
+- **Tipos configuráveis:** a lista de tipos da ER-01 (T) está fixa no código; um projeto que
+  use tipos adicionais (por exemplo, `wip`) precisaria alterar `commits.py` diretamente — uma
+  melhoria natural seria permitir configurar essa lista externamente (arquivo de
+  configuração), mantendo a mesma estrutura de ER.
+- **Normalização de caixa dono/repo (ER-05):** aceitar `Org/Repo#3` exigiria adicionar
+  `[A-Za-z]` ao alfabeto O da ER-05 e decidir, no relatório, se a comparação de igualdade de
+  issues deve ser *case-insensitive* — mudança pequena, mas fora do escopo deste trabalho.
+
+## 10. Contribuições
 
 ## 10. Contribuições
 
