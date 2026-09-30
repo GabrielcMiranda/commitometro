@@ -534,6 +534,86 @@ manter essa restrição e documentá-la em vez de ampliar de novo o alfabeto (se
 
 ## 6. Autômatos finitos com movimentos vazios (AFNε)
 
+### 6.0 Convenção de construção (resumo)
+
+Convenção completa em [`docs/afne/README.md`](../afne/README.md). Resumo:
+
+1. **Método:** construção de Thompson (seção 3.3), fragmento por fragmento, seguindo a **ER
+   formal** de cada ficha (seção 5) — não a sintaxe Python. Um único estado inicial; estados
+   finais explícitos. O ε que liga dois fragmentos **concatenados** é redundante no diagrama
+   (mas existe no `.jff`); os ε de **união**, **fecho** e **opcional** ficam sempre visíveis.
+2. **Arcos rotulados por classe:** um arco `A` (com A = [a-z0-9]) abrevia 36 arcos paralelos.
+   Cada ER tem sua legenda (`ER-0X.legenda.json`) associando símbolo → conjunto.
+3. **Símbolos de classe não colidem com literais daquela ER** (tabela abaixo).
+4. **Espaço:** o caractere `' '` é representado no JFLAP por `_` — exceto na ER-06, onde `_`
+   já é usado como sublinhado literal do e-mail, e o espaço vira `6` (ver nota na linha
+   ER-06 da tabela).
+5. **Exceção da ER-03:** os dígitos são dois arcos separados, `0` e `P` (= [1-9]), nunca uma
+   classe genérica — a tradução cadeia-real → cadeia-representativa vira um homomorfismo
+   exato, usado na demonstração ao vivo (seção 7.2).
+
+| ER | Literais que os símbolos não podem colidir | Símbolos de classe |
+|---|---|---|
+| ER-01 | letras minúsculas dos 11 tipos, `( ) ! :` | `A` = `[a-z0-9]` · `N` = C₀ · `C` = C |
+| ER-02 | letras de `BREAKING CHANGE`, `- : #` | `L` = letra · `x` = C₀ · `y` = C |
+| ER-03 | `v`, `alpha`, `beta`, `rc`, `. -` | `P` = `[1-9]` (nunca uma classe `D` genérica) |
+| ER-04 | letras minúsculas de `main/develop/feature/...`, `/` | `A` = `[a-z0-9]` (mesma da ER-01); reaproveita o sub-AFNε de N da ER-03 |
+| ER-05 | letras de `close/fix/resolve/refs` (minúsculas e maiúsculas) | `O` = `[a-z0-9-]` · `Q` = `O ∪ {., _}` · `P` = `[1-9]` · `D` = `[0-9]` |
+| ER-06 | `C A a B b`, `.`, `<`, `>`, `@` | `1` = M (= L ∪ D) · `2` = U · `3` = H · `4` = Z; espaço representado por `6`, não `_` |
+
+Cada `.jff` foi construído por um construtor de Thompson em Python (não desenhado à mão
+diretamente no JFLAP), o que elimina erro humano de composição de fragmentos — o mesmo
+algoritmo da construção de Thompson, só que executado por código em vez de clique a clique.
+`scripts/afne.py` simula esses `.jff` fora do JFLAP, e `scripts/afne_tabela.py` gera a 5-upla
+e a tabela δ de cada um a partir do próprio arquivo — o relatório nunca diverge do `.jff`
+versionado.
+
+### 6.1 – 6.6 AFNε por ER
+
+Para cada ER: 5-upla resumida abaixo; tabela δ completa e legenda em `docs/afne/ER-0X.md`;
+diagrama exportado do JFLAP (`ER-0X.png`, e para ER-01/04/05/06 também a visão em blocos
+`ER-0X_blocos.png`) linkado a seguir.
+
+| ER | \|Q\| | \|δ\| (transições, incl. ε) | 5-upla e tabela completas |
+|---|---|---|---|
+| ER-01 | 138 | 157 | [`docs/afne/ER-01.md`](../afne/ER-01.md) |
+| ER-02 | 64 | 73 | [`docs/afne/ER-02.md`](../afne/ER-02.md) |
+| ER-03 | 96 | 116 | [`docs/afne/ER-03.md`](../afne/ER-03.md) |
+| ER-04 | 152 | 175 | [`docs/afne/ER-04.md`](../afne/ER-04.md) |
+| ER-05 | 144 | 173 | [`docs/afne/ER-05.md`](../afne/ER-05.md) |
+| ER-06 | 114 | 137 | [`docs/afne/ER-06.md`](../afne/ER-06.md) |
+
+**ER-01 e ER-04** são as maiores construções por unirem, respectivamente, 11 tipos literais
+(T) e 4 famílias de branch com um sub-AFNε de número reaproveitado — daí terem visão em
+blocos, além do diagrama completo (apêndice), para não sobrecarregar a leitura.
+
+![ER-01 — diagrama completo](../afne/ER-01.png)
+
+![ER-01 — visão em blocos](../afne/ER-01_blocos.png)
+
+![ER-02 — diagrama completo](../afne/ER-02.png)
+
+![ER-03 — diagrama completo](../afne/ER-03.png)
+
+![ER-04 — diagrama completo](../afne/ER-04.png)
+
+![ER-04 — visão em blocos](../afne/ER-04_blocos.png)
+
+![ER-05 — diagrama completo](../afne/ER-05.png)
+
+![ER-05 — visão em blocos](../afne/ER-05_blocos.png)
+
+![ER-06 — diagrama completo](../afne/ER-06.png)
+
+![ER-06 — visão em blocos](../afne/ER-06_blocos.png)
+
+> As imagens acima apontam para `docs/afne/ER-0X.png`/`_blocos.png`, exportados do JFLAP
+> (*View → Apply a Special Layout* → *File → Save Image As…*) a partir dos `.jff`
+> versionados. Essa exportação é a única etapa manual de GUI que resta neste plano — os
+> `.jff`, as legendas e as tabelas já estão gerados e verificados (seção 7.1); assim que os
+> PNGs forem exportados pela equipe, eles renderizam nos mesmos caminhos, sem editar este
+> arquivo.
+
 ## 7. Testes e análise dos resultados
 
 ## 8. Resultados da aplicação
