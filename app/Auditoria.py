@@ -3,9 +3,11 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from commitometro.auditoria import auditar
+from commitometro.relatorio import para_json, para_markdown
 
 st.set_page_config(page_title="Commitômetro — Auditoria", page_icon="✅")
 st.title("Commitômetro")
@@ -44,4 +46,54 @@ if st.button("Auditar"):
         arquivo_tags=caminho_tags,
         arquivo_branches=caminho_branches,
     )
-    st.success(f"Auditoria concluída: {len(relatorio.por_autor)} autor(es) analisado(s).")
+
+    total_commits = sum(autor.total_commits for autor in relatorio.por_autor)
+    total_validos = sum(autor.commits_validos for autor in relatorio.por_autor)
+    percentual_geral = round(100 * total_validos / total_commits, 1) if total_commits else 0.0
+    sugestao = relatorio.sugestao_versao
+
+    coluna_1, coluna_2, coluna_3 = st.columns(3)
+    coluna_1.metric("Commits analisados", total_commits)
+    coluna_2.metric("Conformidade geral", f"{percentual_geral}%")
+    coluna_3.metric(
+        "Versão sugerida",
+        sugestao.versao_sugerida,
+        delta=sugestao.versao_anterior or "(nenhuma tag anterior)",
+        delta_color="off",
+    )
+
+    tabela_autores = pd.DataFrame(
+        [
+            {
+                "Autor": autor.nome,
+                "Commits": autor.total_commits,
+                "Válidos": autor.commits_validos,
+                "% conformidade": autor.percentual_conformidade,
+                "Coautorias recebidas": autor.coautorias_recebidas,
+            }
+            for autor in relatorio.por_autor
+        ]
+    )
+    st.subheader("Conformidade por autor")
+    st.dataframe(tabela_autores, hide_index=True)
+    st.bar_chart(tabela_autores.set_index("Autor")["% conformidade"])
+
+    invalidos = [
+        (autor.nome, analise)
+        for autor in relatorio.por_autor
+        for analise in autor.invalidos
+    ]
+    if invalidos:
+        with st.expander(f"{len(invalidos)} commit(s) inválido(s)"):
+            for nome, analise in invalidos:
+                primeira_linha = analise.commit.mensagem.splitlines()[0] if analise.commit.mensagem else ""
+                st.markdown(f"**{analise.commit.hash[:7]}** ({nome}) — `{primeira_linha}`")
+                st.caption(analise.diagnostico or "")
+
+    coluna_json, coluna_markdown = st.columns(2)
+    coluna_json.download_button(
+        "Baixar relatório (JSON)", para_json(relatorio), file_name="auditoria.json"
+    )
+    coluna_markdown.download_button(
+        "Baixar relatório (Markdown)", para_markdown(relatorio), file_name="auditoria.md"
+    )
