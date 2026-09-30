@@ -38,6 +38,22 @@ Gabriel Miranda · Yago Schnorr · João Pedro Silva
 
 ## 1. Resumo
 
+Convenções de mensagem de commit, versionamento e nomenclatura de branch costumam ser
+seguidas "de memória" em projetos colaborativos, sem verificação automática — e desvios só
+aparecem quando já causaram um problema no histórico. O **Commitômetro** resolve isso
+auditando o histórico de um repositório Git (local ou exportado em arquivo) com **seis
+expressões regulares**, formalizadas a partir de convenções reais de mercado (Conventional
+Commits, SemVer, git trailers e palavras-chave de issue do GitHub): cabeçalho de commit,
+rodapé/trailer, tag de versão semântica, nome de branch, referência a issue e coautoria —
+esta última ampliada, de propósito, para aceitar coautoria de assistentes de IA. Cada ER foi
+levada à sua forma de autômato finito com movimentos vazios (AFNε) pela construção de
+Thompson, implementada em Python e verificada por um simulador próprio; um teste
+automatizado no CI confirma, para as seis ERs e sobre mais de 12 mil cadeias (curadas e
+aleatórias), que ER formal, AFNε e implementação em código reconhecem exatamente a mesma
+linguagem — sem nenhuma divergência encontrada. A ferramenta foi usada com sucesso para
+auditar o próprio repositório do projeto, com 100% de conformidade entre os três integrantes
+e sugestão automática da próxima versão semântica.
+
 ## 2. Introdução
 
 Repositórios Git colaborativos dependem de convenções — como as mensagens de commit
