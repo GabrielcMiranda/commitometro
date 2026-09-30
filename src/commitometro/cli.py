@@ -96,3 +96,42 @@ def validar(er: str, cadeia: str) -> None:
         for indice, descricao in sorted(expressao.grupos.items()):
             tabela.add_row(str(indice), escape(descricao), escape(correspondencia.group(indice) or ""))
         console.print(tabela)
+
+
+@app.command()
+def versao(
+    caminho: Optional[str] = typer.Argument(None, help="Caminho do repositório Git."),
+    arquivo: Optional[Path] = typer.Option(None, "--arquivo", help="Histórico exportado."),
+    tags: Optional[Path] = typer.Option(None, "--tags", help="Arquivo de tags exportado."),
+    pre: Optional[str] = typer.Option(None, "--pre", help="Rótulo de pré-lançamento (alpha, beta, rc)."),
+) -> None:
+    relatorio = executar_auditoria(caminho, historico=arquivo, arquivo_tags=tags, pre=pre)
+    sugestao = relatorio.sugestao_versao
+    console = Console()
+    console.print(
+        f"{escape(sugestao.versao_anterior or '(nenhuma)')} → "
+        f"[bold]{escape(sugestao.versao_sugerida)}[/bold]"
+    )
+    console.print(escape(sugestao.motivo))
+
+
+@app.command()
+def ers(markdown: bool = typer.Option(False, "--markdown")) -> None:
+    console = Console()
+    if markdown:
+        for chave in sorted(REGISTRO):
+            expressao = REGISTRO[chave]
+            console.print(f"## {expressao.id} — {expressao.nome}", markup=False)
+            console.print(f"- Formal: `{expressao.formal}`", markup=False)
+            console.print(f"- Código: `{expressao.padrao}`", markup=False)
+            console.print("")
+        return
+
+    tabela = Table(title="Expressões regulares registradas")
+    tabela.add_column("ID")
+    tabela.add_column("Nome")
+    tabela.add_column("ER formal")
+    for chave in sorted(REGISTRO):
+        expressao = REGISTRO[chave]
+        tabela.add_row(expressao.id, escape(expressao.nome), escape(expressao.formal))
+    console.print(tabela)
